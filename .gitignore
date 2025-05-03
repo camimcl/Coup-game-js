@@ -1,0 +1,87 @@
+# -----------------------
+# Node.js dependencies
+# -----------------------
+node_modules/
+# npm debug files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# -----------------------
+# Build output
+# -----------------------
+dist/
+build/
+out/
+*.tsbuildinfo            # TypeScript incremental build file
+
+# -----------------------
+# Environment variables
+# -----------------------
+.env
+.env.*                   # ignore all env files (e.g. .env.local, .env.test)
+!.env.example            # except for your example/template
+
+# -----------------------
+# Logs
+# -----------------------
+logs/
+*.log
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# -----------------------
+# Test coverage
+# -----------------------
+coverage/
+.nyc_output/
+
+# -----------------------
+# IDE / Editor settings
+# -----------------------
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+.editorconfig
+
+# -----------------------
+# OS generated files
+# -----------------------
+.DS_Store
+Thumbs.db
+
+# -----------------------
+# Caches
+# -----------------------
+.cache/
+.eslintcache
+
+# -----------------------
+# Docker
+# -----------------------
+docker-compose.override.yml
+.docker/
+
+# -----------------------
+# Optional extras
+# -----------------------
+# macOS
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+
+# Windows
+ehthumbs.db
+Desktop.ini
+
+# VS Code Test Explorer
+.vscode-test/
+
