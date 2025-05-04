@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import Match from './core/Match';
 
 const app = express();
 const PORT = process.env.PORT ?? 3000;
@@ -14,4 +15,3 @@ app.listen(PORT, () => {
   // eslint-disable-next-line no-console
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
-

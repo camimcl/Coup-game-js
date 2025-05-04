@@ -1,0 +1,4 @@
+export const ACTION_TYPE_CHARACTER = "ACTION_TYPE_CHARACTER";
+export const ACTION_TYPE_GAME = "ACTION_TYPE_GAME";
+
+export type ActionTypes = (typeof ACTION_TYPE_CHARACTER) | (typeof ACTION_TYPE_CHARACTER);
