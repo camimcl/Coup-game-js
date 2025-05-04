@@ -17,7 +17,10 @@ module.exports = {
   plugins: ['@typescript-eslint'],
   settings: {
     'import/resolver': {
-      typescript: {}, // so eslint-plugin-import can find .ts files
+      typescript: {},
+      node: {
+        extensions: [".ts"]
+      }
     },
   },
   rules: {
@@ -30,7 +33,6 @@ module.exports = {
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
 
-    // allow devDependencies in test files (if you add tests later)
     'import/no-extraneous-dependencies': ['error', { devDependencies: ['**/*.test.ts'] }],
 
     // trailing commas for cleaner diffs
