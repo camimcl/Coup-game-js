@@ -1,11 +1,13 @@
 // Requisita duas cartas do deck
-
+import { server } from '../../../index';
 import GameState from '../../GameState';
 import ActionNode from '../../nodes/ActionNode';
 import { getNextTurnActionNode } from '../../nodes/CommonNodes';
 import DecisionNode from '../../nodes/DecisionNode';
 import PromptNode from '../../nodes/PromptNode';
-import { DO_PUBLIC_CHALLENGE, IGNORE_PUBLIC_CHALLENGE, OPEN_PUBLIC_CHALLENGE } from '../events';
+import {
+  CARD_CHOSEN, DO_PUBLIC_CHALLENGE, IGNORE_PUBLIC_CHALLENGE, OPEN_PUBLIC_CHALLENGE,
+} from '../events';
 import { getScopedEventName } from '../eventsUtil';
 
 const giveTwoCardsToPlayer1Node = new ActionNode<GameState>((ctx) => {
@@ -40,20 +42,28 @@ const promptCardDiscardToPlayer2Node = new PromptNode<GameState>(
 
 const checkEmabassadorNode = new DecisionNode<GameState>((ctx) => {
   // Is the showed card embassador?
+  console.log('Checking if card is embassador');
+
+  return false;
 }, discardPlayer1Card, promptCardDiscardToPlayer2Node);
 
-const showCardPrompt = new PromptNode<GameState>(
-  [],
-  (ctx) => {
-    // Asks player 1 to select the card to be shown
+const showCardPrompt = new PromptNode<GameState>({
+  branches: [checkEmabassadorNode],
+  sendPrompt: (ctx) => {
+    server.to(ctx.uuid).emit(getScopedEventName(ctx.uuid, OPEN_PUBLIC_CHALLENGE), {
+      text: 'Que carta deseja mostrar',
+      options: ctx.getCurrentPlayer().getCardsClone().map((card) => card.uuid),
+      events: [],
+    });
   },
-  (ctx) => {
-    // Set the card being shown into the game state
-    // runs the card checker
-  },
-);
+  waitForAnswer: (ctx) => new Promise<number>((resolve) => {
+    ctx.socket.once(getScopedEventName(ctx.uuid, CARD_CHOSEN), () => {
+      resolve(0);
+    });
+  }),
+});
 
-const root = new PromptNode<GameState>(
+export default new PromptNode<GameState>(
   {
     branches: [
       giveTwoCardsToPlayer1Node,

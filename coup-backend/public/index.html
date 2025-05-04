@@ -11,11 +11,12 @@
       const socket = io();
 
       socket.on("connect", () => {
-        socket.emit("start"); // kick off the tree (i.e. the player did something to trigger a specific tree)
+        console.log("Client is connected")
+        socket.emit("create_room"); // kick off the tree (i.e. the player did something to trigger a specific tree)
       });
 
       // When received a prompt from server, show it
-      socket.on("prompt", ({ text, options }) => {
+      socket.on('OPEN_PUBLIC_CHALLENGE', ({ text, options }) => {
         const container = document.querySelector("#choices");
 
         container.innerHTML =

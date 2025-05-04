@@ -1,4 +1,3 @@
-import { Socket } from 'socket.io';
 import Card from './Card';
 import Player from './Player';
 
@@ -15,25 +14,25 @@ export default class GameState {
 
   shown_card: Card | null;
 
-  readonly socket: Socket;
-
   readonly uuid: string;
 
   constructor(
     players: Player[],
-    socker: Socket,
   ) {
     this.chosen_cards = [];
     this.current_player_idx = 0;
     this.discarded_cards = [];
     this.players = players;
     this.shown_card = null;
-    this.socket = socker;
-    this.uuid = crypto.randomUUID();
+    this.uuid = '123';
   }
 
   nextTurn() {
     // TODO: we probably have to handle other things like registering logs, turns...
     this.current_player_idx += 1;
+  }
+
+  getCurrentPlayer() {
+    return this.players[this.current_player_idx];
   }
 }

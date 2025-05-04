@@ -23,4 +23,8 @@ export default class Player {
   addCard(card: Card) {
     this.cards.push(card);
   }
+
+  getCardsClone() {
+    return JSON.parse(JSON.stringify(this.cards)) as Card[];
+  }
 }

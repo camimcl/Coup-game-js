@@ -8,3 +8,7 @@ export const DO_PUBLIC_CHALLENGE = 'DO_PUBLIC_CHALLENGE';
 export const IGNORE_PUBLIC_CHALLENGE = 'IGNORE_PUBLIC_CHALLENGE';
 // Used when a public challenge is closed. That is, an action cannot be contested anymore
 export const CLOSE_PUBLIC_CHALLENGE = 'OPEN_PUBLIC_CHALLENGE';
+
+export const CARD_CHOSEN = 'CARD_CHOSEN';
+
+export const PROMPT = 'PROMPT';

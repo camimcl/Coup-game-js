@@ -2,34 +2,40 @@ import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
 import path from 'path';
-import { makeCaptureTree } from './core/buildTree';
-import { GameContext } from './core/tree';
+import embassadorTree from './core/actions/trees/embassador';
+import GameState from './core/GameState';
 
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
+const httpServer = http.createServer(app);
+export const server = new Server(httpServer);
 
 // serve your static client, etc.
 app.use(express.static(path.join(__dirname, '../public/')));
 
-io.on('connection', (socket) => {
+server.on('connection', (socket) => {
   console.log('Player connected:', socket.id);
 
-  // initialize per‐player game state
-  const ctx: GameContext = {
-    socket,
-    player2Moves: 3,
-    coins: 10,
-  };
-
   // when the client says “start”, run the tree
-  socket.on('start', () => {
-    const tree = makeCaptureTree();
-    tree
-      .execute(ctx)
-      .then(() => console.log('Tree finished for', socket.id))
-      .catch((err) => console.error('Tree error:', err));
+  socket.on('create_room', () => {
+    server.of('/').adapter.on('create-room', (room) => {
+      console.log(`room ${room} was created`);
+    });
+
+    server.of('/').adapter.on('join-room', (room, id) => {
+      console.log(`socket ${id} has joined room ${room}`);
+    });
+
+    const gameState = new GameState([]);
+
+    socket.join(gameState.uuid);
+
+    // const tree = embassadorTree;
+    //
+    // tree
+    //   .execute(gameState)
+    //   .then(() => console.log('Tree finished for', socket.id))
+    //   .catch((err) => console.error('Tree error:', err));
   });
 });
 
-server.listen(3000, () => console.log('Listening on :3000'));
+httpServer.listen(3000, () => console.log('Listening on :3000'));
