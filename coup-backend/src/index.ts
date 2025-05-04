@@ -1,17 +1,35 @@
-import express, { Request, Response } from 'express';
-import Match from './core/Match';
+import express from "express";
+import http from "http";
+import { Server } from "socket.io";
+import { makeCaptureTree } from "./core/buildTree";
+import { GameContext } from "./core/tree";
+import path from 'path';
 
 const app = express();
-const PORT = process.env.PORT ?? 3000;
+const server = http.createServer(app);
+const io = new Server(server);
 
-app.use(express.json());
+// serve your static client, etc.
+app.use(express.static(path.join(__dirname, "../public/")));
 
-// health check
-app.get('/health', (_req: Request, res: Response) => {
-  res.json({ status: 'ok' });
+io.on("connection", socket => {
+  console.log("Player connected:", socket.id);
+
+  // initialize per‐player game state
+  const ctx: GameContext = {
+    socket,
+    player2Moves: 3,
+    coins: 10,
+  };
+
+  // when the client says “start”, run the tree
+  socket.on("start", () => {
+    const tree = makeCaptureTree();
+    tree
+      .execute(ctx)
+      .then(() => console.log("Tree finished for", socket.id))
+      .catch(err => console.error("Tree error:", err));
+  });
 });
 
-app.listen(PORT, () => {
-  // eslint-disable-next-line no-console
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
+server.listen(3000, () => console.log("Listening on :3000"));

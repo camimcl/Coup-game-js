@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title></title>
+  </head>
+  <body>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+
+      socket.on("connect", () => {
+        socket.emit("start"); // kick off the tree (i.e. the player did something to trigger a specific tree)
+      });
+
+      // When received a prompt from server, show it
+      socket.on("prompt", ({ text, options }) => {
+        const container = document.querySelector("#choices");
+
+        container.innerHTML =
+          `<p>${text}</p>` +
+          options
+            .map((o, i) => `<button data-idx="${i}">${o}</button>`)
+            .join("");
+
+        container.querySelectorAll("button").forEach((btn) => {
+          btn.onclick = () => socket.emit("choice", Number(btn.dataset.idx));
+        });
+      });
+
+      socket.on("result", (msg) => {
+        const log = document.querySelector("#log");
+        log.innerHTML += `<div>${msg}</div>`;
+      });
+    </script>
+
+    <div id="choices"></div>
+    <div id="log"></div>
+  </body>
+</html>
