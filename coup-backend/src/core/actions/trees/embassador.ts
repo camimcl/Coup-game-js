@@ -57,7 +57,7 @@ const showCardPrompt = new PromptNode<GameState>({
     });
   },
   waitForAnswer: (ctx) => new Promise<number>((resolve) => {
-    ctx.socket.once(getScopedEventName(ctx.uuid, CARD_CHOSEN), () => {
+    server.of(`/${ctx.uuid}`).once(getScopedEventName(ctx.uuid, CARD_CHOSEN), () => {
       resolve(0);
     });
   }),
@@ -70,7 +70,7 @@ export default new PromptNode<GameState>(
       showCardPrompt,
     ],
     sendPrompt: (ctx) => {
-      ctx.socket.emit(getScopedEventName(ctx.uuid, OPEN_PUBLIC_CHALLENGE), {
+      server.to(ctx.uuid).emit(getScopedEventName(ctx.uuid, OPEN_PUBLIC_CHALLENGE), {
         text: 'Voce quer desafiar?',
         options: ['Desafiar', 'Passar'],
         events: [
@@ -89,32 +89,32 @@ export default new PromptNode<GameState>(
       // have passed, then player1 can get two cards from the deck.
       const onTimeoutId = setTimeout(() => {
         // Cleaning the listeners
-        ctx.socket.removeAllListeners(ignorePublicChallengeEventId);
-        ctx.socket.removeAllListeners(doPublicChallengeEventId);
+        // server.to(ctx.uuid).removeAllListeners(ignorePublicChallengeEventId);
+        // ctx.socket.removeAllListeners(doPublicChallengeEventId);
 
         resolve(0);
       }, 5000);
 
       // For num_players - 1, count that all players passed the challenge
-      ctx.socket.on(ignorePublicChallengeEventId, () => {
+      server.of(`/${ctx.uuid}`).on(ignorePublicChallengeEventId, () => {
         playersThatPassed += 1;
 
         if (playersThatPassed === ctx.players.length - 1) {
           clearTimeout(onTimeoutId);
 
           // Cleaning the listener
-          ctx.socket.removeAllListeners(ignorePublicChallengeEventId);
+          // ctx.socket.removeAllListeners(ignorePublicChallengeEventId);
 
           resolve(0);
         }
       });
 
       // Once, wait for any player to state they challenge player 1
-      ctx.socket.once(doPublicChallengeEventId, () => {
+      server.of(`/${ctx.uuid}`).once(doPublicChallengeEventId, () => {
         clearTimeout(onTimeoutId);
 
         // Cleaning the listener
-        ctx.socket.removeAllListeners(ignorePublicChallengeEventId);
+        // ctx.socket.removeAllListeners(ignorePublicChallengeEventId);
 
         resolve(1);
       });
