@@ -8,25 +8,28 @@
   <body>
     <script src="/socket.io/socket.io.js"></script>
     <script>
-      const socket = io();
+      const socket = io("/123");
 
       socket.on("connect", () => {
         console.log("Client is connected")
-        socket.emit("create_room"); // kick off the tree (i.e. the player did something to trigger a specific tree)
+        socket.emit("start"); // kick off the tree (i.e. the player did something to trigger a specific tree)
       });
 
       // When received a prompt from server, show it
-      socket.on('OPEN_PUBLIC_CHALLENGE', ({ text, options }) => {
+      socket.on('PROMPT', ({ text, options, events }) => {
         const container = document.querySelector("#choices");
 
         container.innerHTML =
           `<p>${text}</p>` +
           options
-            .map((o, i) => `<button data-idx="${i}">${o}</button>`)
+          .map((o, i) => `<button data-idx="${i}" data-event="${events[i]}">${o}</button>`)
             .join("");
 
         container.querySelectorAll("button").forEach((btn) => {
-          btn.onclick = () => socket.emit("choice", Number(btn.dataset.idx));
+          btn.onclick = () => {
+            console.log("Clickec button for event:", btn.dataset.event )
+            socket.emit(btn.dataset.event.trim(), Number(btn.dataset.idx));
+          }
         });
       });
 

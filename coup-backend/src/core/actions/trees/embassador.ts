@@ -7,8 +7,8 @@ import DecisionNode from '../../nodes/DecisionNode';
 import PromptNode from '../../nodes/PromptNode';
 import {
   CARD_CHOSEN, DO_PUBLIC_CHALLENGE, IGNORE_PUBLIC_CHALLENGE, OPEN_PUBLIC_CHALLENGE,
+  PROMPT,
 } from '../events';
-import { getScopedEventName } from '../eventsUtil';
 
 const giveTwoCardsToPlayer1Node = new ActionNode<GameState>((ctx) => {
   // Give two cards to the player
@@ -49,15 +49,16 @@ const checkEmabassadorNode = new DecisionNode<GameState>((ctx) => {
 
 const showCardPrompt = new PromptNode<GameState>({
   branches: [checkEmabassadorNode],
-  sendPrompt: (ctx) => {
-    server.to(ctx.uuid).emit(getScopedEventName(ctx.uuid, OPEN_PUBLIC_CHALLENGE), {
-      text: 'Que carta deseja mostrar',
-      options: ctx.getCurrentPlayer().getCardsClone().map((card) => card.uuid),
+  sendPrompt: (gameState, namespaceServer) => {
+    namespaceServer.emit(PROMPT, {
+      text: 'Voce esta sendo desafiado como embaixador, que carta deseja mostrar?',
+      options: gameState.getCurrentPlayer()?.getCardsClone().map((card) => card.uuid) || [],
       events: [],
     });
   },
-  waitForAnswer: (ctx) => new Promise<number>((resolve) => {
-    server.of(`/${ctx.uuid}`).once(getScopedEventName(ctx.uuid, CARD_CHOSEN), () => {
+  waitForAnswer: (_, namespaceServer) => new Promise<number>((resolve) => {
+    namespaceServer.once(CARD_CHOSEN, () => {
+      // Retrieve the card id from the payload and save into the game state
       resolve(0);
     });
   }),
@@ -69,54 +70,43 @@ export default new PromptNode<GameState>(
       giveTwoCardsToPlayer1Node,
       showCardPrompt,
     ],
-    sendPrompt: (ctx) => {
-      server.to(ctx.uuid).emit(getScopedEventName(ctx.uuid, OPEN_PUBLIC_CHALLENGE), {
-        text: 'Voce quer desafiar?',
+    sendPrompt: (_, namespaceServer) => {
+      namespaceServer.emit(PROMPT, {
+        text: 'Fulano se diz embaixador e quer duas cartas do deck',
         options: ['Desafiar', 'Passar'],
         events: [
-          getScopedEventName(ctx.uuid, DO_PUBLIC_CHALLENGE),
-          getScopedEventName(ctx.uuid, IGNORE_PUBLIC_CHALLENGE),
+          DO_PUBLIC_CHALLENGE,
+          IGNORE_PUBLIC_CHALLENGE,
         ],
       });
     },
-    waitForAnswer: (ctx) => new Promise<number>((resolve) => {
-      const doPublicChallengeEventId = getScopedEventName(ctx.uuid, DO_PUBLIC_CHALLENGE);
-      const ignorePublicChallengeEventId = getScopedEventName(ctx.uuid, IGNORE_PUBLIC_CHALLENGE);
+    waitForAnswer: (gameState, namespaceServer) => new Promise<number>((resolve) => {
+      // If at least one player haven't challenged AND 5 seconds
+      // have passed, then player1 can get two cards from the deck.
+      const onTimeoutId = setTimeout(() => resolve(0), 15000);
+
+      // Once, wait for any player to state they challenge player 1
+      namespaceServer.sockets.forEach((socket) => {
+        socket.once(DO_PUBLIC_CHALLENGE, () => {
+          clearTimeout(onTimeoutId);
+
+          resolve(1);
+        });
+      });
 
       let playersThatPassed = 0;
 
-      // If at least one player haven't passed or challenged AND 5 seconds
-      // have passed, then player1 can get two cards from the deck.
-      const onTimeoutId = setTimeout(() => {
-        // Cleaning the listeners
-        // server.to(ctx.uuid).removeAllListeners(ignorePublicChallengeEventId);
-        // ctx.socket.removeAllListeners(doPublicChallengeEventId);
+      // For num_players - 1, count that all players ignored the challenge
+      namespaceServer.sockets.forEach((socket) => {
+        socket.on(IGNORE_PUBLIC_CHALLENGE, () => {
+          playersThatPassed += 1;
 
-        resolve(0);
-      }, 5000);
+          if (playersThatPassed === gameState.players.length - 1) {
+            clearTimeout(onTimeoutId);
 
-      // For num_players - 1, count that all players passed the challenge
-      server.of(`/${ctx.uuid}`).on(ignorePublicChallengeEventId, () => {
-        playersThatPassed += 1;
-
-        if (playersThatPassed === ctx.players.length - 1) {
-          clearTimeout(onTimeoutId);
-
-          // Cleaning the listener
-          // ctx.socket.removeAllListeners(ignorePublicChallengeEventId);
-
-          resolve(0);
-        }
-      });
-
-      // Once, wait for any player to state they challenge player 1
-      server.of(`/${ctx.uuid}`).once(doPublicChallengeEventId, () => {
-        clearTimeout(onTimeoutId);
-
-        // Cleaning the listener
-        // ctx.socket.removeAllListeners(ignorePublicChallengeEventId);
-
-        resolve(1);
+            resolve(0);
+          }
+        });
       });
     }),
   },

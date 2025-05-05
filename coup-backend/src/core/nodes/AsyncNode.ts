@@ -1,3 +1,5 @@
-export interface AsyncNode<Ctx> {
-  execute(ctx: Ctx): Promise<void>;
+import { Namespace } from 'socket.io';
+
+export interface AsyncNode<GameState> {
+  execute(gameState: GameState, namespaceServer: Namespace): Promise<void>;
 }
