@@ -11,25 +11,44 @@
       const socket = io("/123");
 
       socket.on("connect", () => {
-        console.log("Client is connected")
-        socket.emit("start"); // kick off the tree (i.e. the player did something to trigger a specific tree)
+        console.log("Client is connected");
+        
+        // Start the tree, just for demo
+        socket.emit("start");
       });
 
-      // When received a prompt from server, show it
-      socket.on('PROMPT', ({ text, options, events }) => {
+      // When a prompt is received, shows it
+      socket.on("PROMPT", (data) => {
+        const { message, options, optionsEvents, variant } = data;
+
+        console.log("Received prompt: ");
+        console.log(data)
+
+        if(!options) {
+          const container = document.querySelector("#choices");
+
+          container.innerHTML = `Will prompt variant ${variant}`
+
+          return;
+        }
+
         const container = document.querySelector("#choices");
 
         container.innerHTML =
-          `<p>${text}</p>` +
+          `<p>${message}</p>` +
           options
-          .map((o, i) => `<button data-idx="${i}" data-event="${events[i]}">${o}</button>`)
+            .map(
+              (o, i) =>
+                `<button data-idx="${i}" data-event="${optionsEvents[i] || optionsEvents[0]}">${o}</button>`,
+            )
             .join("");
 
         container.querySelectorAll("button").forEach((btn) => {
           btn.onclick = () => {
-            console.log("Clickec button for event:", btn.dataset.event )
+            console.log("Clicked option for event: ", btn.dataset.event);
+
             socket.emit(btn.dataset.event.trim(), Number(btn.dataset.idx));
-          }
+          };
         });
       });
 

@@ -15,7 +15,10 @@ export default class ActionNode<GameState> implements AsyncNode<GameState> {
   */
   private nextNode: AsyncNode<GameState> | undefined;
 
-  constructor(doAction: (ctx: GameState) => Promise<void>, nextAction?: ActionNode<GameState>) {
+  constructor(
+    doAction: (gameState: GameState, namespaceServer: Namespace) => Promise<void>,
+    nextAction?: ActionNode<GameState>,
+  ) {
     this.doAction = doAction;
     this.nextNode = nextAction;
   }

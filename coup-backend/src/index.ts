@@ -4,6 +4,7 @@ import { Server } from 'socket.io';
 import path from 'path';
 import embassadorTree from './core/actions/trees/embassador';
 import GameState from './core/GameState';
+import Player from './core/Player';
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -16,6 +17,9 @@ const gameState = new GameState([]);
 
 server.of(`/${gameState.uuid}`).on('connection', (socket) => {
   console.log('Player connected:', socket.id);
+  const player = new Player(socket.id, socket);
+
+  gameState.addPlayer(player);
 
   socket.on('start', () => {
     const tree = embassadorTree;

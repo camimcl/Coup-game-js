@@ -1,16 +1,15 @@
-// Requisita duas cartas do deck
-import { server } from '../../../index';
 import GameState from '../../GameState';
 import ActionNode from '../../nodes/ActionNode';
-import { getNextTurnActionNode } from '../../nodes/CommonNodes';
-import DecisionNode from '../../nodes/DecisionNode';
-import PromptNode from '../../nodes/PromptNode';
 import {
-  CARD_CHOSEN, DO_PUBLIC_CHALLENGE, IGNORE_PUBLIC_CHALLENGE, OPEN_PUBLIC_CHALLENGE,
-  PROMPT,
+  getChallengeNode, getChooseOwnedCardNode, getDecisionNode, getNextTurnActionNode,
+} from '../../nodes/CommonNodes';
+import {
+  DO_PUBLIC_CHALLENGE, IGNORE_PUBLIC_CHALLENGE,
 } from '../events';
+import emitPrompt, { OWNED_CARDS_CHOICE } from '../eventsUtil';
 
 const giveTwoCardsToPlayer1Node = new ActionNode<GameState>((ctx) => {
+  console.log('Giving two cards to player 1');
   // Give two cards to the player
 });
 
@@ -23,91 +22,54 @@ const discardPlayer1Card = new ActionNode<GameState>((ctx) => {
 });
 
 const discardPlayer2Card = new ActionNode<GameState>((ctx) => {
-  // The action (get two cards) is not performed and the player1 discards the showed card
+  console.log('Player 2 discards one card');
 }, giveThreeCardsToPlayer1Node);
 
-const promptCardDiscardToPlayer2Node = new PromptNode<GameState>(
-  [
-    discardPlayer2Card,
-  ],
-  (ctx) => {
-    // Asks the user which card they want to discard
-  },
-  (ctx) => {
-    // wait for the user answer
-    // Set the chosen card into the game state
-    // Runs the discardPlayer2Card node
-  },
-);
-
-const checkEmabassadorNode = new DecisionNode<GameState>((ctx) => {
-  // Is the showed card embassador?
-  console.log('Checking if card is embassador');
-
-  return false;
-}, discardPlayer1Card, promptCardDiscardToPlayer2Node);
-
-const showCardPrompt = new PromptNode<GameState>({
-  branches: [checkEmabassadorNode],
-  sendPrompt: (gameState, namespaceServer) => {
-    namespaceServer.emit(PROMPT, {
-      text: 'Voce esta sendo desafiado como embaixador, que carta deseja mostrar?',
-      options: gameState.getCurrentPlayer()?.getCardsClone().map((card) => card.uuid) || [],
-      events: [],
+const askChallengerToChooseCardNode = getChooseOwnedCardNode({
+  onCardChosenNode: discardPlayer2Card,
+  sendPrompt: (_, namespaceServer) => {
+    emitPrompt({
+      namespaceServer,
+      message: 'Choose a card to discard',
+      variant: OWNED_CARDS_CHOICE,
     });
   },
-  waitForAnswer: (_, namespaceServer) => new Promise<number>((resolve) => {
-    namespaceServer.once(CARD_CHOSEN, () => {
-      // Retrieve the card id from the payload and save into the game state
-      resolve(0);
-    });
-  }),
 });
 
-export default new PromptNode<GameState>(
-  {
-    branches: [
-      giveTwoCardsToPlayer1Node,
-      showCardPrompt,
-    ],
-    sendPrompt: (_, namespaceServer) => {
-      namespaceServer.emit(PROMPT, {
-        text: 'Fulano se diz embaixador e quer duas cartas do deck',
-        options: ['Desafiar', 'Passar'],
-        events: [
-          DO_PUBLIC_CHALLENGE,
-          IGNORE_PUBLIC_CHALLENGE,
-        ],
-      });
-    },
-    waitForAnswer: (gameState, namespaceServer) => new Promise<number>((resolve) => {
-      // If at least one player haven't challenged AND 5 seconds
-      // have passed, then player1 can get two cards from the deck.
-      const onTimeoutId = setTimeout(() => resolve(0), 15000);
+const checkEmabassadorNode = getDecisionNode({
+  isConditionTrue: () => {
+    // eslint-disable-next-line no-console
+    console.log('Checking if card is embassador');
 
-      // Once, wait for any player to state they challenge player 1
-      namespaceServer.sockets.forEach((socket) => {
-        socket.once(DO_PUBLIC_CHALLENGE, () => {
-          clearTimeout(onTimeoutId);
-
-          resolve(1);
-        });
-      });
-
-      let playersThatPassed = 0;
-
-      // For num_players - 1, count that all players ignored the challenge
-      namespaceServer.sockets.forEach((socket) => {
-        socket.on(IGNORE_PUBLIC_CHALLENGE, () => {
-          playersThatPassed += 1;
-
-          if (playersThatPassed === gameState.players.length - 1) {
-            clearTimeout(onTimeoutId);
-
-            resolve(0);
-          }
-        });
-      });
-    }),
+    return true;
   },
-);
+  onFalseNode: discardPlayer1Card,
+  onTrueNode: askChallengerToChooseCardNode,
+});
+
+const chooseEmbassadorCardNode = getChooseOwnedCardNode({
+  onCardChosenNode: checkEmabassadorNode,
+  sendPrompt: (_, namespaceServer) => {
+    emitPrompt({
+      namespaceServer,
+      message: 'Voce esta sendo desafiado como embaixador, que carta deseja mostrar?',
+      variant: OWNED_CARDS_CHOICE,
+    });
+  },
+});
+
+export default getChallengeNode({
+  onChallengedNode: chooseEmbassadorCardNode,
+  onPassedNode: giveTwoCardsToPlayer1Node,
+  sendPrompt: (_, namespaceServer) => {
+    emitPrompt({
+      namespaceServer,
+      message: 'Fulano se diz embaixador e quer duas cartas do deck',
+      options: ['Desafiar', 'Passar'],
+      optionsEvents: [
+        DO_PUBLIC_CHALLENGE,
+        IGNORE_PUBLIC_CHALLENGE,
+      ],
+    });
+  },
+});

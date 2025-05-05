@@ -1,17 +1,15 @@
 import { CardVariant } from './CardVariants';
-import Deck from './Deck';
-import Player from './Player';
 
 export default class Card {
   // If there is no owner, the card belongs to the deck
-  owner: Player | Deck;
+  ownerUUID: string | null;
 
   readonly uuid: string;
 
   readonly variant: CardVariant;
 
-  constructor(owner: Player | Deck, variant: CardVariant) {
-    this.owner = owner;
+  constructor(ownerUUID: string | null, variant: CardVariant) {
+    this.ownerUUID = ownerUUID;
     this.uuid = crypto.randomUUID();
     this.variant = variant;
   }
