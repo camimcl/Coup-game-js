@@ -5,6 +5,7 @@ import path from 'path';
 import embassadorTree from './core/actions/trees/embassador';
 import GameState from './core/GameState';
 import Player from './core/Player';
+import giveIncome from './core/actions/trees/income';
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -22,7 +23,7 @@ server.of(`/${gameState.uuid}`).on('connection', (socket) => {
   gameState.addPlayer(player);
 
   socket.on('start', () => {
-    const tree = embassadorTree;
+    const tree = giveIncome;
 
     tree
       .execute(gameState, server.of(`/${gameState.uuid}`))
@@ -30,4 +31,4 @@ server.of(`/${gameState.uuid}`).on('connection', (socket) => {
       .catch((err) => console.error('Tree error:', err));
   });
 });
-httpServer.listen(3000, () => console.log('Listening on :3000'));
+httpServer.listen(3000, () => console.log('Listening on :3000')); 

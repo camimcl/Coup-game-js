@@ -12,3 +12,7 @@ export const CLOSE_PUBLIC_CHALLENGE = 'OPEN_PUBLIC_CHALLENGE';
 export const CARD_CHOSEN = 'CARD_CHOSEN';
 
 export const PROMPT = 'PROMPT';
+
+export const MESSAGE = 'MESSAGE';
+
+export const END_TURN = "END_TURN";

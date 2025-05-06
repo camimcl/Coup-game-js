@@ -1,5 +1,5 @@
 import { Namespace } from 'socket.io';
-import { AsyncNode } from './nodes/AsyncNode';
+import { AsyncNode } from './AsyncNode';
 
 /**
   * A node that prompts a question to the client and waits for an answer
