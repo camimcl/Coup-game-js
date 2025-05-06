@@ -1,4 +1,4 @@
-import Card from './Card';
+import Card from './cards/Card';
 import Player from './Player';
 
 export default class GameState {
@@ -39,5 +39,9 @@ export default class GameState {
   addPlayer(player: Player) {
     // TODO: checar se a partida ja comecou. Se sim, ninguem mais pode entrar
     this.players.push(player);
+  }
+
+  getCurrentTurnTargetPlayer(){
+    return this.players[this.current_turn_target_player];
   }
 }

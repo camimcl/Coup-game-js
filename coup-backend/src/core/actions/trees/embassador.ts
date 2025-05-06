@@ -6,13 +6,13 @@ import {
 import {
   DO_PUBLIC_CHALLENGE, IGNORE_PUBLIC_CHALLENGE,
 } from '../events';
-import emitPrompt, { OWNED_CARDS_CHOICE } from '../eventsUtil';
+import emitPrompt, {  OWNED_CARDS_CHOICE } from '../eventsUtil';
 
 const giveTwoCardsToPlayer1Node = new ActionNode<GameState>((ctx) => {
   console.log('Giving two cards to player 1');
   // Give two cards to the player
 });
-
+ 
 const giveThreeCardsToPlayer1Node = new ActionNode<GameState>((ctx) => {
   // Give two cards to the player
 }, getNextTurnActionNode());
@@ -38,7 +38,6 @@ const askChallengerToChooseCardNode = getChooseOwnedCardNode({
 
 const checkEmabassadorNode = getDecisionNode({
   isConditionTrue: () => {
-    // eslint-disable-next-line no-console
     console.log('Checking if card is embassador');
 
     return true;

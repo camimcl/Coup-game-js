@@ -14,6 +14,12 @@ export const getNextTurnActionNode = (): ActionNode<GameState> => new ActionNode
   resolve();
 }));
 
+// needs to be implemented // especify the player its the turn player or the challenger??? 
+export const getNewCardNode = (): ActionNode<GameState> => new ActionNode<GameState>((gameState) => new Promise<void>((resolve) => {
+  gameState.getCurrentPlayer();
+  console.log('Player receives a new card for reaveling the correct card');
+  }));
+
 export const getDecisionNode = ({ isConditionTrue, onFalseNode, onTrueNode }: {
   isConditionTrue: (gameState: GameState) => boolean,
   onFalseNode: AsyncNode<GameState>,

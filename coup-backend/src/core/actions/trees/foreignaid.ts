@@ -35,6 +35,18 @@ const discardPlayer2Card = new ActionNode<GameState>((ctx) => {
   getForeignAidNode;
 });
 
+const askChallengerToChooseCardNode = getChooseOwnedCardNode({
+  onCardChosenNode: discardPlayer2Card,
+  sendPrompt: (_, namespaceServer) => {
+    emitPrompt({
+      namespaceServer,
+      message: 'Choose a card to discard',
+      variant: OWNED_CARDS_CHOICE,
+    });
+  },
+});
+
+
 const checkDuqueNode = getDecisionNode({
     isConditionTrue: () => {
       console.log('Checking if card is duke');
@@ -42,7 +54,7 @@ const checkDuqueNode = getDecisionNode({
       return true;
     },
     onFalseNode: discardPlayer2Card,
-    onTrueNode: discardPlayer1Card,
+    onTrueNode: askChallengerToChooseCardNode,
   });
 
 const chooseDuqueCardNode = getChooseOwnedCardNode({
