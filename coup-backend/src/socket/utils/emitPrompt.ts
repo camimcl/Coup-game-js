@@ -17,7 +17,9 @@ export type PromptOption = {
 }
 
 type TEmitPrompt = {
-  namespaceServer: Namespace;
+  socket: Socket;
+
+  namespace: Namespace;
 
   // The message which will show up for the player
   message: string;
@@ -36,15 +38,32 @@ type TEmitPrompt = {
   variant?: PROMPT_VARIANT;
 }
 
-export default function emitPrompt(
+export function emitPromptToOtherPlayers(
   {
-    namespaceServer,
     message,
     options,
+    socket,
     variant,
   }: TEmitPrompt,
 ) {
-  namespaceServer.emit(PROMPT, {
+  socket.broadcast.emit(PROMPT, {
+    message,
+    options,
+    variant,
+  });
+}
+
+/// socket is the target player
+export function emitPromptToPlayer(
+  {
+    message,
+    namespace,
+    options,
+    socket,
+    variant,
+  }: TEmitPrompt,
+) {
+  namespace.to(socket.id).emit(PROMPT, {
     message,
     options,
     variant,

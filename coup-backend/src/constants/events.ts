@@ -16,6 +16,9 @@ export const CARD_CHOSEN = 'CARD_CHOSEN';
 // Used to identify prompts that the user must choose an option from
 export const PROMPT = 'PROMPT';
 
+// Used to identify the answer of a prompt
+export const PROMPT_RESPONSE = 'PROMPT_RESPONSE';
+
 // Used when a player has joined a match
 export const ENTER_MATCH = 'ENTER_MATCH';
 
