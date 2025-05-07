@@ -1,6 +1,7 @@
 import { Namespace } from 'socket.io';
 import Card from './entities/Card.ts';
 import Player from './entities/Player.ts';
+import Deck from './Deck.ts';
 
 export default class GameState {
   // Used for when the player has to choose one or more cards
@@ -15,9 +16,11 @@ export default class GameState {
   // after loosing a challenge to the `current_turn_player`.
   private current_turn_target_player: number = 0;
 
-  private deck: Card[] = [];
+  private deck: Deck;
 
-  readonly players: Player[];
+  private players: Player[];
+
+  private eliminatedPlayers: Player[];
 
   readonly uuid: string;
 
@@ -29,17 +32,24 @@ export default class GameState {
   ) {
     this.chosen_cards = [];
     this.current_turn_player = 0;
+    this.deck = new Deck(players.length);
     this.namespace = namespace;
     this.players = players;
+    this.eliminatedPlayers = [];
     this.uuid = '123';
   }
 
   discardPlayerCardAndAddToDeck(cardUUID: string, player: Player) {
     const discardedCard = player.removeCardByUUID(cardUUID);
 
+    // Player has been eliminated. Remove from the `players` array
     if (player.getCardsClone().length === 0) {
       // TODO: move the player to a `losers` array or handle the losing another way
       console.debug(`Player ${player.uuid} has lost.`);
+
+      this.eliminatedPlayers.push(this.getPlayerByUUID(player.uuid));
+
+      this.players = this.players.filter((_player) => _player.uuid !== player.uuid);
     }
 
     this.addCardToDeck(discardedCard);
@@ -52,6 +62,8 @@ export default class GameState {
     if (this.current_turn_player === this.players.length) {
       this.current_turn_player = 0;
     }
+
+    this.current_turn_target_player = this.current_turn_player;
   }
 
   addCardToDeck(card: Card) {
@@ -64,5 +76,9 @@ export default class GameState {
 
   getPlayerByUUID(uuid: string) {
     return this.players.filter((player) => player.uuid === uuid)[0];
+  }
+
+  getPlayersAmount() {
+    return this.players.length;
   }
 }

@@ -1,7 +1,7 @@
 import { Namespace } from 'socket.io';
-import { PROMPT_RESPONSE } from '../constants/events';
-import Player from '../core/entities/Player';
-import { emitPromptToPlayer } from '../socket/utils/emitPrompt';
+import { PROMPT_RESPONSE } from '../constants/events.ts';
+import Player from '../core/entities/Player.ts';
+import { emitPromptToPlayer } from '../socket/utils/emitPrompt.ts';
 
 /// Ask a player to choose a card among the cards their own.
 /// If timeout is passed and a card is not chosen, the first

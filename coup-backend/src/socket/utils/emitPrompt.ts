@@ -59,11 +59,11 @@ export function emitPromptToPlayer(
     message,
     namespace,
     options,
-    socket,
+    socket: targetSocket,
     variant,
   }: TEmitPrompt,
 ) {
-  namespace.to(socket.id).emit(PROMPT, {
+  namespace.to(targetSocket.id).emit(PROMPT, {
     message,
     options,
     variant,

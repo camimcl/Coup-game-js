@@ -7,7 +7,7 @@ interface props {
   namespace: Namespace;
 }
 
-export function listenOnEverySocketExcept({
+export function onEverySocketExceptOne({
   callback,
   eventName,
   exceptionSocket,
@@ -22,7 +22,7 @@ export function listenOnEverySocketExcept({
   });
 }
 
-export function listenOnEverySocket({
+export function onEverySocketInNamespace({
   callback,
   eventName,
   namespace,
@@ -32,7 +32,7 @@ export function listenOnEverySocket({
   });
 }
 
-export function listenOnceEverySocketExcept({
+export function onceEverySocketExceptOne({
   callback,
   eventName,
   exceptionSocket,
@@ -47,7 +47,7 @@ export function listenOnceEverySocketExcept({
   });
 }
 
-export function listenOnceEverySocket({
+export function onceEverySocketInNamespace({
   callback,
   eventName,
   namespace,

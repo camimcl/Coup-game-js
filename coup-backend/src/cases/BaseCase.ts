@@ -3,7 +3,7 @@ import { PROMPT_OPTION_CHALLENGE_ACCEPT, PROMPT_OPTION_CHALLENGE_PASS, PROMPT_OP
 import Player from '../core/entities/Player.ts';
 import GameState from '../core/GameState.ts';
 import { emitPromptToOtherPlayers, PromptOption } from '../socket/utils/emitPrompt.ts';
-import { listenOnceEverySocketExcept } from '../socket/utils/listen.ts';
+import { onceEverySocketExceptOne } from '../socket/utils/listen.ts';
 
 export default abstract class BaseCase {
   protected gameState: GameState;
@@ -15,7 +15,7 @@ export default abstract class BaseCase {
     this.currentPlayer = gameState.getCurrentTurnPlayer();
   }
 
-  protected async emitChallengeToOtherPlayers({ timeout = 5000 }: { timeout?: number }) {
+  protected async emitChallengeToOtherPlayers(timeout: number = 5000) {
     emitPromptToOtherPlayers({
       namespace: this.gameState.namespace,
       socket: this.currentPlayer.socket,
@@ -42,14 +42,14 @@ export default abstract class BaseCase {
 
       let playersThatPassedChallenge = 0;
 
-      listenOnceEverySocketExcept({
+      onceEverySocketExceptOne({
         callback: (data, socketId) => {
           const response = (data as PromptOption).value as PROMPT_OPTION_VALUE;
 
           if (response === PROMPT_OPTION_CHALLENGE_PASS) {
             playersThatPassedChallenge += 1;
 
-            if (playersThatPassedChallenge === this.gameState.players.length - 1) {
+            if (playersThatPassedChallenge === this.gameState.getPlayersAmount() - 1) {
               clearTimeout(timeoutId);
 
               resolve({ challengerId: socketId, response: PROMPT_OPTION_CHALLENGE_PASS });
