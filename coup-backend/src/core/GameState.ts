@@ -1,3 +1,4 @@
+import { Namespace } from 'socket.io';
 import Card from './entities/Card.ts';
 import Player from './entities/Player.ts';
 
@@ -14,15 +15,21 @@ export default class GameState {
   // after loosing a challenge to the `current_turn_player`.
   private current_turn_target_player: number = 0;
 
+  private deck: Card[] = [];
+
   readonly players: Player[];
 
   readonly uuid: string;
 
+  readonly namespace: Namespace;
+
   constructor(
+    namespace: Namespace,
     players: Player[],
   ) {
     this.chosen_cards = [];
     this.current_turn_player = 0;
+    this.namespace = namespace;
     this.players = players;
     this.uuid = '123';
   }
@@ -36,7 +43,26 @@ export default class GameState {
     }
   }
 
+  discardPlayerCard(cardUUID: string, player: Player) {
+    const discardedCard = player.removeCardByUUID(cardUUID);
+
+    if (player.getCardsClone().length === 0) {
+      // TODO: move the player to a `losers` array or handle the losing another way
+      console.log(`Player ${player.uuid} has lost.`);
+    }
+
+    this.addCardToDeck(discardedCard);
+  }
+
+  addCardToDeck(card: Card) {
+    this.deck.push(card);
+  }
+
   getCurrentTurnPlayer() {
     return this.players[this.current_turn_player];
+  }
+
+  getPlayerByUUID(uuid: string) {
+    return this.players.filter((player) => player.uuid === uuid)[0];
   }
 }

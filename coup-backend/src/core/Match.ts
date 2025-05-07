@@ -13,14 +13,14 @@ export default class Match {
 
   private gameState: GameState;
 
-  private matchNamespace: Namespace;
+  private namespace: Namespace;
 
   constructor(players: Player[], server: Server) {
     this.players = players;
 
-    this.gameState = new GameState(this.players);
-    this.uuid = crypto.randomUUID();
-    this.matchNamespace = server.of(this.uuid);
+    this.uuid = '123';
+    this.namespace = server.of(this.uuid);
+    this.gameState = new GameState(this.namespace, this.players);
 
     console.debug(`Starting match with id: ${this.uuid}`);
   }
@@ -32,5 +32,17 @@ export default class Match {
 
   removePlayer(uuid: string) {
     this.players = this.players.filter((player) => player.uuid !== uuid);
+  }
+
+  getUUID() {
+    return this.uuid;
+  }
+
+  getNamespace() {
+    return this.namespace;
+  }
+
+  getGameState() {
+    return this.gameState;
   }
 }

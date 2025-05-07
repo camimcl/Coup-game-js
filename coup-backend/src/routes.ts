@@ -1,9 +1,13 @@
 import express, { Request, Response } from 'express';
+import path from 'path';
 import http from 'http';
 import { Server } from 'socket.io';
 import Match from './core/Match.ts';
+import initializeNamespace from './namespaceEvents.ts';
 
 const app = express();
+
+app.use(express.static(path.join(__dirname, '../public/')));
 
 const httpServer = http.createServer(app);
 
@@ -15,10 +19,12 @@ app.get('/', (_req: Request, res: Response) => {
   res.json({ status: 'ok' });
 });
 
-app.get('/create-match', (request: Request, response: Response) => {
+app.post('/create-match', (request: Request, response: Response) => {
   const match = new Match([], server);
 
-  response.json({ message: 'Created match' });
+  initializeNamespace(match);
+
+  response.json({ message: `Created match ${match.getUUID()}` });
 });
 
 export default httpServer;
