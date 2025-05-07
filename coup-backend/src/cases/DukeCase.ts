@@ -20,7 +20,7 @@ export default class DukeCase extends BaseCase {
     const {
       challengerId,
       response: challengeResolution,
-    } = await this.emitChallengeToOtherPlayers();
+    } = await this.emitChallengeToOtherPlayers(`${this.currentPlayer.name} diz ser o Duque e requisita três moedas.`);
 
     if (challengeResolution === PROMPT_OPTION_CHALLENGE_ACCEPT) {
       await this.handleChallenge(challengerId);
@@ -34,9 +34,13 @@ export default class DukeCase extends BaseCase {
   }
 
   private async handleChallenge(challengerId: string) {
-    const { namespace } = this.gameState;
+    const namespace = this.gameState.getNamespace();
 
     this.challengerPlayer = this.gameState.getPlayerByUUID(challengerId);
+
+    if (!this.challengerPlayer) {
+      throw new Error('Player was not found. Finishing game');
+    }
 
     console.debug(`${this.challengerPlayer.name} has challenged ${this.currentPlayer.name}`);
 

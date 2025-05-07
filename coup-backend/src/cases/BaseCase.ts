@@ -15,11 +15,11 @@ export default abstract class BaseCase {
     this.currentPlayer = gameState.getCurrentTurnPlayer();
   }
 
-  protected async emitChallengeToOtherPlayers(timeout: number = 5000) {
+  protected async emitChallengeToOtherPlayers(message: string, timeout: number = 5000) {
     emitPromptToOtherPlayers({
-      namespace: this.gameState.namespace,
+      namespace: this.gameState.getNamespace(),
       socket: this.currentPlayer.socket,
-      message: `${this.currentPlayer.name} diz ser o duque e está requisitando 3 moedas`,
+      message,
       options: [
         {
           label: 'Contestar',
@@ -49,7 +49,7 @@ export default abstract class BaseCase {
           if (response === PROMPT_OPTION_CHALLENGE_PASS) {
             playersThatPassedChallenge += 1;
 
-            if (playersThatPassedChallenge === this.gameState.getPlayersAmount() - 1) {
+            if (playersThatPassedChallenge === this.gameState.getPlayersCount() - 1) {
               clearTimeout(timeoutId);
 
               resolve({ challengerId: socketId, response: PROMPT_OPTION_CHALLENGE_PASS });
@@ -61,8 +61,8 @@ export default abstract class BaseCase {
           }
         },
         eventName: PROMPT_RESPONSE,
-        exceptionSocket: this.currentPlayer.socket,
-        namespace: this.gameState.namespace,
+        excludeSocketId: this.currentPlayer.socket.id,
+        namespace: this.gameState.getNamespace(),
       });
     });
   }

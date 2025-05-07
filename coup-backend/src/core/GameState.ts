@@ -3,82 +3,179 @@ import Card from './entities/Card.ts';
 import Player from './entities/Player.ts';
 import Deck from './Deck.ts';
 
+/**
+ * Manages the full state of a match:
+ */
 export default class GameState {
-  // Used for when the player has to choose one or more cards
-  private chosen_cards: Card[];
+  /** Cards selected during prompts or actions. */
+  private chosenCards: Card[] = [];
 
-  // Player that is making the play in the current turn
-  private current_turn_player: number = 0;
+  /** Index of the player whose turn it is. */
+  private currentTurnPlayerIndex: number = 0;
 
-  // Players that should take an action in the current turn.
-  // It might not be the `current_turn_player`. For instance,
-  // a second player could be asked to choose a card to discard
-  // after loosing a challenge to the `current_turn_player`.
-  private current_turn_target_player: number = 0;
+  /** Index of the player targeted for action this turn. */
+  private currentTurnTargetIndex: number = 0;
 
+  /** Shared deck of cards to draw from or discard into. */
   private deck: Deck;
 
+  /** Players still active in the match. */
   private players: Player[];
 
-  private eliminatedPlayers: Player[];
+  /** Players who have been eliminated. */
+  private eliminatedPlayers: Player[] = [];
 
-  readonly uuid: string;
+  /** Unique match identifier (used for the Socket.IO namespace). */
+  public readonly uuid: string;
 
-  readonly namespace: Namespace;
+  /** Socket.IO namespace for broadcasting game-state events. */
+  private readonly namespace: Namespace;
 
-  constructor(
-    namespace: Namespace,
-    players: Player[],
-  ) {
-    this.chosen_cards = [];
-    this.current_turn_player = 0;
-    this.deck = new Deck(players.length);
+  /**
+   * Initializes a new game state.
+   *
+   * @param namespace - Namespace for emitting state updates.
+   * @param players   - Starting list of players.
+   */
+  constructor(namespace: Namespace, players: Player[]) {
     this.namespace = namespace;
     this.players = players;
-    this.eliminatedPlayers = [];
+    this.deck = new Deck(players.length);
     this.uuid = '123';
+
+    // Optionally deal initial hands:
+    this.dealInitialHands();
+    this.broadcastState();
   }
 
-  discardPlayerCardAndAddToDeck(cardUUID: string, player: Player) {
-    const discardedCard = player.removeCardByUUID(cardUUID);
+  /**
+   * Discards a card from the given player into the deck.
+   * Eliminates the player if they have no cards left.
+   *
+   * @param cardUUID - UUID of the card to discard.
+   * @param player   - Player who is discarding.
+   */
+  public discardPlayerCardAndAddToDeck(cardUUID: string, player: Player): void {
+    const discarded = player.removeCardByUUID(cardUUID);
+    this.deck.push(discarded);
 
-    // Player has been eliminated. Remove from the `players` array
     if (player.getCardsClone().length === 0) {
-      // TODO: move the player to a `losers` array or handle the losing another way
-      console.debug(`Player ${player.uuid} has lost.`);
-
-      this.eliminatedPlayers.push(this.getPlayerByUUID(player.uuid));
-
-      this.players = this.players.filter((_player) => _player.uuid !== player.uuid);
+      this.eliminatePlayer(player.uuid);
     }
 
-    this.addCardToDeck(discardedCard);
+    this.broadcastState();
   }
 
-  goToNextTurn() {
-    // TODO: we probably have to handle other things like registering logs, turns...
-    this.current_turn_player += 1;
+  /**
+   * Advances turn to the next active player (wraps around),
+   * and resets the target to that player by default.
+   */
+  public goToNextTurn(): void {
+    if (this.players.length === 0) return;
 
-    if (this.current_turn_player === this.players.length) {
-      this.current_turn_player = 0;
+    this.currentTurnPlayerIndex = (this.currentTurnPlayerIndex + 1) % this.players.length;
+    this.currentTurnTargetIndex = this.currentTurnPlayerIndex;
+
+    this.broadcastState();
+  }
+
+  /**
+   * Draws one card from the deck and gives it to the specified player.
+   *
+   * @param player - Player who will receive the drawn card.
+   * @returns The drawn card, or null if the deck is empty.
+   */
+  public drawCardForPlayer(player: Player): Card | null {
+    const card = this.deck.draw();
+    if (card) {
+      player.addCard(card);
+      this.broadcastState();
+      return card;
     }
-
-    this.current_turn_target_player = this.current_turn_player;
+    return null;
   }
 
-  addCardToDeck(card: Card) {
-    this.deck.push(card);
+  /**
+   * Eliminates a player by UUID, moving them to the eliminated list
+   * and removing them from active players.
+   *
+   * @param uuid - UUID of the player to eliminate.
+   */
+  public eliminatePlayer(uuid: string): void {
+    const [player] = this.players.filter((p) => p.uuid === uuid);
+    if (!player) return;
+
+    this.eliminatedPlayers.push(player);
+    this.players = this.players.filter((p) => p.uuid !== uuid);
   }
 
-  getCurrentTurnPlayer() {
-    return this.players[this.current_turn_player];
+  /**
+   * Deals an initial hand to every player from the deck.
+   * Assumes Deck was initialized with enough cards.
+   *
+   * @param handSize - Number of cards per player (default: 2).
+   */
+  private dealInitialHands(handSize: number = 2): void {
+    this.players.forEach((player) => {
+      for (let i = 0; i < handSize; i += 1) {
+        const card = this.deck.draw();
+        if (card) player.addCard(card);
+      }
+    });
   }
 
-  getPlayerByUUID(uuid: string) {
-    return this.players.filter((player) => player.uuid === uuid)[0];
+  /** @returns The player whose turn it is now. */
+  public getCurrentTurnPlayer(): Player {
+    return this.players[this.currentTurnPlayerIndex];
   }
 
-  getPlayersAmount() {
+  /** @returns The player targeted for action this turn. */
+  public getCurrentTurnTarget(): Player {
+    return this.players[this.currentTurnTargetIndex];
+  }
+
+  /** @returns All active players. */
+  public getActivePlayers(): Player[] {
+    return [...this.players];
+  }
+
+  /** @returns All eliminated players. */
+  public getEliminatedPlayers(): Player[] {
+    return [...this.eliminatedPlayers];
+  }
+
+  /** @returns Total number of active players. */
+  public getPlayersCount(): number {
     return this.players.length;
+  }
+
+  /** @returns The current deck. */
+  public getDeck(): Deck {
+    return this.deck;
+  }
+
+  /**
+   * Broadcasts the full game state over the namespace.
+   * You can adjust which parts you want clients to see.
+   */
+  public broadcastState(): void {
+    this.namespace.emit('GAME_STATE_UPDATE', {
+      uuid: this.uuid,
+      players: this.players.map((p) => p.name),
+      eliminated: this.eliminatedPlayers.map((p) => p.name),
+      currentTurnPlayer: this.getCurrentTurnPlayer()?.uuid,
+      currentTurnTarget: this.getCurrentTurnTarget()?.uuid,
+      deckSize: this.deck.size(),
+    });
+  }
+
+  /** @returns The match namespace. */
+  public getNamespace() {
+    return this.namespace;
+  }
+
+  /** @returns Returns the player with UUID. */
+  public getPlayerByUUID(uuid: string) {
+    return this.players.filter((player) => player.uuid === uuid)[0];
   }
 }
