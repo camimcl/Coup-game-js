@@ -34,6 +34,17 @@ export default class GameState {
     this.uuid = '123';
   }
 
+  discardPlayerCardAndAddToDeck(cardUUID: string, player: Player) {
+    const discardedCard = player.removeCardByUUID(cardUUID);
+
+    if (player.getCardsClone().length === 0) {
+      // TODO: move the player to a `losers` array or handle the losing another way
+      console.debug(`Player ${player.uuid} has lost.`);
+    }
+
+    this.addCardToDeck(discardedCard);
+  }
+
   goToNextTurn() {
     // TODO: we probably have to handle other things like registering logs, turns...
     this.current_turn_player += 1;
@@ -41,17 +52,6 @@ export default class GameState {
     if (this.current_turn_player === this.players.length) {
       this.current_turn_player = 0;
     }
-  }
-
-  discardPlayerCard(cardUUID: string, player: Player) {
-    const discardedCard = player.removeCardByUUID(cardUUID);
-
-    if (player.getCardsClone().length === 0) {
-      // TODO: move the player to a `losers` array or handle the losing another way
-      console.log(`Player ${player.uuid} has lost.`);
-    }
-
-    this.addCardToDeck(discardedCard);
   }
 
   addCardToDeck(card: Card) {

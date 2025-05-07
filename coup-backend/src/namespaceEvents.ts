@@ -1,4 +1,4 @@
-import DuqueCase from './cases/duque.ts';
+import DukeCase from './cases/DukeCase.ts';
 import Player from './core/entities/Player.ts';
 import Match from './core/Match.ts';
 
@@ -18,8 +18,10 @@ export default function initializeNamespace(
       console.log(`Player ${socket.id} has left the room ${namespace.name}`);
     });
 
-    socket.on('DUQUE', () => {
-      DuqueCase(match.getGameState());
+    socket.on('DUKE', () => {
+      const dukeCase = new DukeCase(match.getGameState());
+
+      dukeCase.tax();
     });
   });
 }
