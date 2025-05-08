@@ -3,8 +3,8 @@ import { PROMPT_RESPONSE } from '../constants/events.ts';
 import { PROMPT_OPTION_CHALLENGE_ACCEPT, PROMPT_OPTION_CHALLENGE_PASS, PROMPT_OPTION_VALUE } from '../constants/promptOptions.ts';
 import Player from '../core/entities/Player.ts';
 import GameState from '../core/GameState.ts';
-import { emitPromptToOtherPlayers, emitPromptToPlayer, PromptOption } from '../socket/utils/emitPrompt.ts';
 import { onceEverySocketExceptOne } from '../socket/utils/listen.ts';
+import { emitPromptToOtherPlayers, emitPromptToPlayer, PromptOption } from './utils.ts';
 
 export default abstract class BaseCase {
   protected gameState: GameState;
@@ -20,7 +20,12 @@ export default abstract class BaseCase {
     {
       defaultOption, message, options, targetSocket,
     }:
-      { defaultOption: PromptOption, message: string, options: PromptOption[], targetSocket: Socket },
+      {
+        defaultOption: PromptOption,
+        message: string,
+        options: PromptOption[],
+        targetSocket: Socket
+      },
   ): Promise<string> {
     const namespace = this.gameState.getNamespace();
 
