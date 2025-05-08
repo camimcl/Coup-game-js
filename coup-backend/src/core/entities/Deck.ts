@@ -1,4 +1,4 @@
-import Card from './entities/Card.ts';
+import Card from './Card.ts';
 
 /**
  * A standard deck of cards supporting shuffle, draw, and insertion operations.

@@ -1,7 +1,7 @@
 import { Namespace } from 'socket.io';
 import Card from './entities/Card.ts';
 import Player from './entities/Player.ts';
-import Deck from './Deck.ts';
+import Deck from './entities/Deck.ts';
 
 /**
  * Manages the full state of a match:
@@ -43,7 +43,6 @@ export default class GameState {
     this.deck = new Deck(players.length);
     this.uuid = '123';
 
-    // Optionally deal initial hands:
     this.dealInitialHands();
     this.broadcastState();
   }
