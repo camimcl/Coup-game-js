@@ -36,7 +36,7 @@ export default class Player {
 
     // Start with one Duke card and 2 coins
     this.cards = [new Card(CARD_VARIANT_DUKE)];
-    this.coins = 2;
+    this.coins = 4;
   }
 
   /**

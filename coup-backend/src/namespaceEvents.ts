@@ -1,3 +1,4 @@
+import AssassinCase from './cases/AssassinCase.ts';
 import DukeCase from './cases/DukeCase.ts';
 import Player from './core/entities/Player.ts';
 import Match from './core/Match.ts';
@@ -22,6 +23,12 @@ export default function initializeNamespace(
       const dukeCase = new DukeCase(match.getGameState());
 
       dukeCase.tax();
+    });
+
+    socket.on('ASSASSIN', () => {
+      const assassinCase = new AssassinCase(match.getGameState());
+
+      assassinCase.execute();
     });
   });
 }

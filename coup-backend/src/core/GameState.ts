@@ -57,7 +57,8 @@ export default class GameState {
    */
   public discardPlayerCardAndAddToDeck(cardUUID: string, player: Player): void {
     const discarded = player.removeCardByUUID(cardUUID);
-    this.deck.push(discarded);
+
+    this.deck.pushAndShuffle(discarded);
 
     if (player.getCardsClone().length === 0) {
       this.eliminatePlayer(player.uuid);

@@ -16,7 +16,7 @@ export default async function askPlayerToChooseCard(
   emitPromptToPlayer({
     namespace,
     socket: player.socket,
-    message: 'Voce esta sendo contestado como duque. Escolha uma carta.',
+    message: 'Escolha uma das cartas',
     options,
   });
 

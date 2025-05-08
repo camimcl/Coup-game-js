@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-import GameState from '../core/GameState.ts';
 import { PROMPT_OPTION_CHALLENGE_ACCEPT } from '../constants/promptOptions.ts';
 import askPlayerToChooseCard from './utils.ts';
 import { CARD_VARIANT_ASSASSIN, CARD_VARIANT_DUKE } from '../constants/cardVariants.ts';
@@ -9,12 +8,6 @@ import BaseCase from './BaseCase.ts';
 
 export default class DukeCase extends BaseCase {
   private challengerPlayer: Player | null = null;
-
-  constructor(gameState: GameState) {
-    super(gameState);
-
-    this.currentPlayer = gameState.getCurrentTurnPlayer();
-  }
 
   async tax() {
     const {

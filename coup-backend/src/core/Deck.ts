@@ -43,6 +43,15 @@ export default class Deck {
   }
 
   /**
+   * Adds a single card to deck and shuffles it.
+   *
+   * @param card - The Card to add.
+   */
+  public pushAndShuffle(card: Card): void {
+    this.cards.push(card);
+  }
+
+  /**
    * Adds a single card to the bottom of the deck.
    *
    * @param card - The Card to add.
