@@ -1,5 +1,7 @@
+import AmbassadorCase from './cases/AmbassadorCase.ts';
 import AssassinCase from './cases/AssassinCase.ts';
 import DukeCase from './cases/DukeCase.ts';
+import IncomeCase from './cases/IncomeCase.ts';
 import Player from './core/entities/Player.ts';
 import Match from './core/Match.ts';
 
@@ -29,6 +31,17 @@ export default function initializeNamespace(
       const assassinCase = new AssassinCase(match.getGameState());
 
       assassinCase.execute();
+    });
+    socket.on('INCOME', () => {
+      const incomeCase = new IncomeCase(match.getGameState());
+
+      incomeCase.getIncome();
+    });
+
+    socket.on('EXCHANGE', () => {
+      const ambassadorCase = new AmbassadorCase(match.getGameState());
+
+      ambassadorCase.exchangeCards();
     });
   });
 }

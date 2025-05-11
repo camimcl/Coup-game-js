@@ -1,3 +1,4 @@
+import { CARD_VARIANT_AMBASSADOR, CARD_VARIANT_CONDESSA, CARD_VARIANT_DUKE } from '../../constants/cardVariants.ts';
 import Card from './Card.ts';
 
 /**
@@ -15,7 +16,7 @@ export default class Deck {
    */
   constructor(playersAmount: number) {
     // TODO: populate `this.cards` here (e.g., generate one card per combination of suit/rank)
-    this.cards = [];
+    this.cards = [new Card(CARD_VARIANT_DUKE), new Card(CARD_VARIANT_AMBASSADOR), new Card(CARD_VARIANT_CONDESSA)]; // Example cards
   }
 
   /**
@@ -38,8 +39,8 @@ export default class Deck {
    *
    * @returns The drawn Card, or `null` if the deck is empty.
    */
-  public draw(): Card | null {
-    return this.cards.length > 0 ? this.cards.shift()! : null;
+  public draw(): Card{
+    return this.cards.shift()!;
   }
 
   /**
@@ -49,6 +50,7 @@ export default class Deck {
    */
   public pushAndShuffle(card: Card): void {
     this.cards.push(card);
+    this.shuffle();
   }
 
   /**

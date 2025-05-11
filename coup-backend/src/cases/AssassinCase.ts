@@ -111,7 +111,7 @@ export default class AssassinCase extends BaseCase {
 
     console.log(`Discarding card ${uuid} from player ${this.targetPlayer.name}`);
 
-    this.gameState.discardPlayerCardAndAddToDeck(uuid, this.targetPlayer);
+    this.gameState.discardPlayerCard(uuid, this.targetPlayer);
   }
 
   /**
@@ -162,7 +162,7 @@ export default class AssassinCase extends BaseCase {
       // TODO: ask challenger (currentPlayer) to discard one and discard it
       const chosenCardUuid = await askPlayerToChooseCard(namespace, this.currentPlayer);
 
-      this.gameState.discardPlayerCardAndAddToDeck(chosenCardUuid, this.currentPlayer);
+      this.gameState.discardPlayerCard(chosenCardUuid, this.currentPlayer);
     } else {
       // Block failed: target loses both cards
       // TODO: ask target to discard two cards, one at a time
@@ -184,11 +184,11 @@ export default class AssassinCase extends BaseCase {
       // Challenge failed: challenger loses one card and current player exchanges Assassin
       const chosenCardUuid = await askPlayerToChooseCard(namespace, this.targetPlayer);
 
-      this.gameState.discardPlayerCardAndAddToDeck(chosenCardUuid, this.targetPlayer);
+      this.gameState.discardPlayerCard(chosenCardUuid, this.targetPlayer);
 
       // TODO: Add card from deck to current player
     } else {
-      this.gameState.discardPlayerCardAndAddToDeck(revealUuid, this.currentPlayer);
+      this.gameState.discardPlayerCard(revealUuid, this.currentPlayer);
     }
   }
 }

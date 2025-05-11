@@ -19,6 +19,9 @@ export default class GameState {
   /** Shared deck of cards to draw from or discard into. */
   private deck: Deck;
 
+  private knownCards: Card[] = [];
+  /** Cards that have been discarded. */
+
   /** Players still active in the match. */
   private players: Player[];
 
@@ -54,10 +57,10 @@ export default class GameState {
    * @param cardUUID - UUID of the card to discard.
    * @param player   - Player who is discarding.
    */
-  public discardPlayerCardAndAddToDeck(cardUUID: string, player: Player): void {
+  public discardPlayerCard(cardUUID: string, player: Player): void {
     const discarded = player.removeCardByUUID(cardUUID);
 
-    this.deck.pushAndShuffle(discarded);
+    this.knownCards.push(discarded);
 
     if (player.getCardsClone().length === 0) {
       this.eliminatePlayer(player.uuid);
@@ -65,6 +68,8 @@ export default class GameState {
 
     this.broadcastState();
   }
+
+  //
 
   /**
    * Advances turn to the next active player (wraps around),
@@ -85,6 +90,7 @@ export default class GameState {
    * @param player - Player who will receive the drawn card.
    * @returns The drawn card, or null if the deck is empty.
    */
+
   public drawCardForPlayer(player: Player): Card | null {
     const card = this.deck.draw();
     if (card) {
@@ -93,6 +99,14 @@ export default class GameState {
       return card;
     }
     return null;
+  }
+
+  //put the revealed card in the deck, shuffle, and draw a new one
+  public discardRevealedCard(cardUUID: string, player: Player): void { 
+    const discarded = player.removeCardByUUID(cardUUID);
+
+    this.deck.pushAndShuffle(discarded);
+    player.addCard(this.deck.draw())
   }
 
   /**

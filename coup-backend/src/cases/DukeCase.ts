@@ -24,8 +24,9 @@ export default class DukeCase extends BaseCase {
 
       console.debug(`Now ${this.currentPlayer.name} has ${this.currentPlayer.getCoinsAmount()} coins`);
     }
+    this.finishTurn();
   }
-
+  
   private async handleChallenge(challengerId: string) {
     const namespace = this.gameState.getNamespace();
 
@@ -46,7 +47,7 @@ export default class DukeCase extends BaseCase {
     if (chosenCard.variant !== CARD_VARIANT_DUKE) {
       console.debug('The chosen card is not Duke. Discarding the chosen card.');
 
-      this.gameState.discardPlayerCardAndAddToDeck(currentPlayerChosenCardUUID, this.currentPlayer);
+      this.gameState.discardPlayerCard(currentPlayerChosenCardUUID, this.currentPlayer);
 
       // TODO: emit event to the current player saying that the card was discarded
 
@@ -59,23 +60,17 @@ export default class DukeCase extends BaseCase {
 
     console.debug('Discarding the chosen card.');
 
-    this.gameState.discardPlayerCardAndAddToDeck(challengerChosenCardUUID, this.challengerPlayer);
+    this.gameState.discardPlayerCard(challengerChosenCardUUID, this.challengerPlayer);
 
     // TODO: emit event to the challenger player saying that the card was discarded
 
     console.debug(`${this.currentPlayer.name} receives a new card and discard the Duke card`);
 
-    // TODO get the card from the deck.
-    this.currentPlayer.addCard(new Card(CARD_VARIANT_ASSASSIN));
-
-    // TODO: devemos descartar a carta primeiro, embaralhar o deck e pegar uma carta nova
-
-    this.gameState.discardPlayerCardAndAddToDeck(currentPlayerChosenCardUUID, this.currentPlayer);
-
+    this.gameState.discardRevealedCard(chosenCard, this.currentPlayer);
+    
     console.debug(`Performing the Duke action and giving 3 coins to ${this.currentPlayer.name}`);
 
     this.currentPlayer.addCoins(3);
-
     console.debug(`Now ${this.currentPlayer.name} has ${this.currentPlayer.getCoinsAmount()} coins`);
   }
 }

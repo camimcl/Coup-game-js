@@ -1,6 +1,7 @@
 import { Namespace, Socket } from 'socket.io';
 import { PROMPT, PROMPT_RESPONSE } from '../constants/events.ts';
 import Player from '../core/entities/Player.ts';
+import { emit } from 'process';
 
 /**
  * Variants for which the client knows how to handle the prompt without options.
@@ -87,6 +88,42 @@ export function emitPromptToPlayer({
     message,
     options,
     variant,
+  });
+}
+
+export async function askPlayerToChooseTwoCards(
+  namespace: Namespace,
+  player: Player,
+): Promise<[string, string]> {
+  const cards = player.getCardsClone();
+  const options = cards.map((card) => ({
+    label: card.variant,
+    value: card.uuid,
+  }));
+
+  emitPromptToPlayer({
+    namespace,
+    socket: player.socket,
+    message: 'Escolha 2 cartas',
+    options,
+    variant: CARDS_CHOICE,
+  });
+
+  return new Promise<[string, string]>((resolve) => {
+    const timeoutId = setTimeout(() => {
+      console.debug('Prompt expirado. Selecionando automaticamente as duas primeiras cartas.');
+      resolve([options[0].value, options[1].value]);
+    }, 7000);
+
+    player.socket.once(PROMPT_RESPONSE, (response) => {
+      clearTimeout(timeoutId);
+
+      if (Array.isArray(response) && response.length >= 2) {
+        resolve([response[0], response[1]]);
+      } else {
+        resolve([options[0].value, options[1].value]);
+      }
+    });
   });
 }
 
