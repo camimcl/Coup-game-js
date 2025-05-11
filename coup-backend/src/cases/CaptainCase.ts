@@ -18,6 +18,12 @@ export default class CaptainCase extends BaseCase {
   /** The player being targeted for assassination. */
   private targetPlayer!: Player;
 
+  public canExecute(): boolean {
+    const players = this.gameState.getActivePlayers();
+
+    return players.some((p) => p.getCoinsAmount() >= 2) && super.canExecute();
+  }
+
   // Assumes at least one target has two or more coins
   public async stealTwoCoins() {
     await this.promptChooseTarget();

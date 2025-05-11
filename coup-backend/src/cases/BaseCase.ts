@@ -16,6 +16,10 @@ export default abstract class BaseCase {
     this.currentPlayer = gameState.getCurrentTurnPlayer();
   }
 
+  public canExecute(): boolean {
+    return this.currentPlayer.getCoinsAmount() < 10;
+  }
+
   protected async emitChallengeToPlayer(message: string, targetSocket: Socket)
     : Promise<(typeof PROMPT_OPTION_CHALLENGE_ACCEPT | typeof PROMPT_OPTION_CHALLENGE_PASS)> {
     const options = [

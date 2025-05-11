@@ -5,6 +5,10 @@ import Player from '../core/entities/Player.ts';
 export default class CoupCase extends BaseCase {
   private targetPlayer!: Player;
 
+  public canExecute(): boolean {
+    return this.currentPlayer.getCoinsAmount() >= 7;
+  }
+
   async execute() {
     const coins = this.currentPlayer.getCoinsAmount();
 

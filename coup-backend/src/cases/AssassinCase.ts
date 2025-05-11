@@ -13,6 +13,10 @@ export default class AssassinCase extends BaseCase {
   /** The player being targeted for assassination. */
   private targetPlayer!: Player;
 
+  public canExecute(): boolean {
+    return this.currentPlayer.getCoinsAmount() >= 3 && super.canExecute();
+  }
+
   /**
    * Orchestrates the full assassination sequence.
    */
