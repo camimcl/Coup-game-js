@@ -39,7 +39,7 @@ export default class Deck {
    *
    * @returns The drawn Card, or `null` if the deck is empty.
    */
-  public draw(): Card{
+  public draw(): Card {
     return this.cards.shift()!;
   }
 

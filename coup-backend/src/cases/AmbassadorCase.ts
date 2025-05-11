@@ -1,77 +1,73 @@
 import BaseCase from './BaseCase.ts';
-import Player from '../core/entities/Player.ts';
-import { PROMPT_OPTION_CHALLENGE_ACCEPT, PROMPT_OPTION_CHALLENGE_PASS } from '../constants/promptOptions.ts';
+import { PROMPT_OPTION_CHALLENGE_ACCEPT } from '../constants/promptOptions.ts';
 import { CARD_VARIANT_AMBASSADOR } from '../constants/cardVariants.ts';
-import Card from '../core/entities/Card.ts';
 import askPlayerToChooseCard, { askPlayerToChooseTwoCards } from './utils.ts';
 
 export default class AmbassadorCase extends BaseCase {
-
-    public async exchangeCards(): Promise<void> {
-        const { 
-            challengerId, 
-            response
-         } = await this.emitChallengeToOtherPlayers
-        (`${this.currentPlayer.name} diz ser o embaixador e deseja trocar de cartas`);
-         if (response === PROMPT_OPTION_CHALLENGE_ACCEPT){
-            await this.handleChallenge(challengerId);
-         }
-         else{
-            await this.performExchange();
-         }
-
-         this.finishTurn();
+  public async exchangeCards(): Promise<void> {
+    const {
+      challengerId,
+      response,
+    } = await this.emitChallengeToOtherPlayers(`${this.currentPlayer.name} diz ser o embaixador e deseja trocar de cartas`);
+    if (response === PROMPT_OPTION_CHALLENGE_ACCEPT) {
+      await this.handleChallenge(challengerId);
+    } else {
+      await this.performExchange();
     }
 
-    private async handleChallenge(challengerId: string){
-        const namespace = this.gameState.getNamespace();
-        const challenger = this.gameState.getPlayerByUUID(challengerId);
+    this.finishTurn();
+  }
 
-        const revealedUUID = await askPlayerToChooseCard(namespace, this.currentPlayer);
-        const revealedCard = this.currentPlayer.getCardByUUID(revealedUUID);
+  private async handleChallenge(challengerId: string) {
+    const namespace = this.gameState.getNamespace();
+    const challenger = this.gameState.getPlayerByUUID(challengerId);
 
-        // Check if the revealed card is the ambassador
-        if(revealedCard.variant !== CARD_VARIANT_AMBASSADOR){
-            this.gameState.discardPlayerCard(revealedUUID, this.currentPlayer);
-            return;
-        }
-        // If the revealed card is the ambassador, the challenger must discard a card
-        const challengerCardUUID = await askPlayerToChooseCard(namespace, challenger);
-        this.gameState.discardPlayerCard(challengerCardUUID, challenger);
+    const revealedUUID = await askPlayerToChooseCard(namespace, this.currentPlayer);
+    const revealedCard = this.currentPlayer.getCardByUUID(revealedUUID);
 
-        // currentPlayer returns the ambassador card for replace
-        this.gameState.discardRevealedCard(revealedUUID, this.currentPlayer)
-
-        await this.performExchange();
+    // Check if the revealed card is the ambassador
+    if (revealedCard.variant !== CARD_VARIANT_AMBASSADOR) {
+      this.gameState.discardPlayerCard(revealedUUID, this.currentPlayer);
+      return;
     }
-    private async performExchange(){
-        const namespace = this.gameState.getNamespace();
-        const cardsBeforeAction = this.currentPlayer.getCardsClone();
-        
-        //draw two cards from the deck
-        const drawn1 = this.gameState.getDeck().draw();
-        const drawn2 = this.gameState.getDeck().draw();
+    // If the revealed card is the ambassador, the challenger must discard a card
+    const challengerCardUUID = await askPlayerToChooseCard(namespace, challenger);
+    this.gameState.discardPlayerCard(challengerCardUUID, challenger);
 
-        if (!drawn1 || !drawn2){
-            throw new Error('Cartas insuficientes no baralho');
-        }
+    // currentPlayer returns the ambassador card for replace
+    this.gameState.discardRevealedCard(revealedUUID, this.currentPlayer);
 
-        //add the cards to the player
-        this.currentPlayer.addCard(drawn1);
-        this.currentPlayer.addCard(drawn2);
+    await this.performExchange();
+  }
 
-        //colect all the actual cards after the draw  
-        const totalCards = this.currentPlayer.getCardsClone();
+  private async performExchange() {
+    const namespace = this.gameState.getNamespace();
+    const cardsBeforeAction = this.currentPlayer.getCardsClone();
 
-        //keep the choosen cards
-        const keptCardsUUIDs = await askPlayerToChooseTwoCards(namespace, this.currentPlayer);
-        //remove the cards that were not kept
+    // draw two cards from the deck
+    const drawn1 = this.gameState.getDeck().draw();
+    const drawn2 = this.gameState.getDeck().draw();
 
-        for(const card of totalCards){
-            if(!keptCardsUUIDs.includes(card.uuid)){
-                this.currentPlayer.removeCardByUUID(card.uuid);
-                this.gameState.getDeck().pushAndShuffle(card);
-            }
-        }
+    if (!drawn1 || !drawn2) {
+      throw new Error('Cartas insuficientes no baralho');
     }
+
+    // add the cards to the player
+    this.currentPlayer.addCard(drawn1);
+    this.currentPlayer.addCard(drawn2);
+
+    // colect all the actual cards after the draw
+    const totalCards = this.currentPlayer.getCardsClone();
+
+    // keep the choosen cards
+    const keptCardsUUIDs = await askPlayerToChooseTwoCards(namespace, this.currentPlayer);
+    // remove the cards that were not kept
+
+    for (const card of totalCards) {
+      if (!keptCardsUUIDs.includes(card.uuid)) {
+        this.currentPlayer.removeCardByUUID(card.uuid);
+        this.gameState.getDeck().pushAndShuffle(card);
+      }
+    }
+  }
 }

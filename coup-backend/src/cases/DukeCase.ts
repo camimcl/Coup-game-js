@@ -26,7 +26,7 @@ export default class DukeCase extends BaseCase {
     }
     this.finishTurn();
   }
-  
+
   private async handleChallenge(challengerId: string) {
     const namespace = this.gameState.getNamespace();
 
@@ -67,7 +67,7 @@ export default class DukeCase extends BaseCase {
     console.debug(`${this.currentPlayer.name} receives a new card and discard the Duke card`);
 
     this.gameState.discardRevealedCard(chosenCard, this.currentPlayer);
-    
+
     console.debug(`Performing the Duke action and giving 3 coins to ${this.currentPlayer.name}`);
 
     this.currentPlayer.addCoins(3);

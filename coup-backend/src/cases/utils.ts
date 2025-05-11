@@ -1,7 +1,7 @@
 import { Namespace, Socket } from 'socket.io';
+import { emit } from 'process';
 import { PROMPT, PROMPT_RESPONSE } from '../constants/events.ts';
 import Player from '../core/entities/Player.ts';
-import { emit } from 'process';
 
 /**
  * Variants for which the client knows how to handle the prompt without options.
