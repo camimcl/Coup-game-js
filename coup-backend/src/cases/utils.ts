@@ -1,5 +1,4 @@
 import { Namespace, Socket } from 'socket.io';
-import { emit } from 'process';
 import { PROMPT, PROMPT_RESPONSE } from '../constants/events.ts';
 import Player from '../core/entities/Player.ts';
 
@@ -10,10 +9,14 @@ import Player from '../core/entities/Player.ts';
  * - `CARDS_CHOICE`: Player chooses one card among a specific set of cards.
  */
 export const OWNED_CARDS_CHOICE = 'OWNED_CARDS_CHOICE';
+export const OWNED_CARDS_CHOICE_MULTIPLE = 'OWNED_CARDS_CHOICE_MULTIPLE';
 export const CARDS_CHOICE = 'CARDS_CHOICE';
 
 /** Union type of all supported prompt variants. */
-export type PROMPT_VARIANT = typeof OWNED_CARDS_CHOICE | typeof CARDS_CHOICE;
+export type PROMPT_VARIANT =
+  typeof OWNED_CARDS_CHOICE |
+  typeof CARDS_CHOICE |
+  typeof OWNED_CARDS_CHOICE_MULTIPLE;
 
 /**
  * Represents an option in a prompt presented to the player.
@@ -106,12 +109,13 @@ export async function askPlayerToChooseTwoCards(
     socket: player.socket,
     message: 'Escolha 2 cartas',
     options,
-    variant: CARDS_CHOICE,
+    variant: OWNED_CARDS_CHOICE_MULTIPLE,
   });
 
   return new Promise<[string, string]>((resolve) => {
     const timeoutId = setTimeout(() => {
       console.debug('Prompt expirado. Selecionando automaticamente as duas primeiras cartas.');
+
       resolve([options[0].value, options[1].value]);
     }, 7000);
 
@@ -119,7 +123,7 @@ export async function askPlayerToChooseTwoCards(
       clearTimeout(timeoutId);
 
       if (Array.isArray(response) && response.length >= 2) {
-        resolve([response[0], response[1]]);
+        resolve(response as [string, string]);
       } else {
         resolve([options[0].value, options[1].value]);
       }
@@ -134,6 +138,7 @@ export async function askPlayerToChooseTwoCards(
 export default async function askPlayerToChooseCard(
   namespace: Namespace,
   player: Player,
+  variant?: PROMPT_VARIANT,
 ) {
   const options = player.getCardsClone().map((card) => ({ label: card.variant, value: card.uuid }));
 
@@ -142,6 +147,7 @@ export default async function askPlayerToChooseCard(
     socket: player.socket,
     message: 'Escolha uma das cartas',
     options,
+    variant,
   });
 
   return new Promise<string>((resolve) => {

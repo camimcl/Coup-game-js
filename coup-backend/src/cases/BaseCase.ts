@@ -16,6 +16,27 @@ export default abstract class BaseCase {
     this.currentPlayer = gameState.getCurrentTurnPlayer();
   }
 
+  protected async emitChallengeToPlayer(message: string, targetSocket: Socket)
+    : Promise<(typeof PROMPT_OPTION_CHALLENGE_ACCEPT | typeof PROMPT_OPTION_CHALLENGE_PASS)> {
+    const options = [
+      {
+        label: 'Contestar',
+        value: PROMPT_OPTION_CHALLENGE_ACCEPT,
+      },
+      {
+        label: 'Passar',
+        value: PROMPT_OPTION_CHALLENGE_PASS,
+      },
+    ];
+
+    return this.emitPromptToPlayer({
+      defaultOption: options[0],
+      message,
+      targetSocket,
+      options,
+    }) as unknown as (typeof PROMPT_OPTION_CHALLENGE_PASS | typeof PROMPT_OPTION_CHALLENGE_ACCEPT);
+  }
+
   protected async emitPromptToPlayer(
     {
       defaultOption, message, options, targetSocket,

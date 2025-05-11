@@ -36,7 +36,7 @@ export default class Player {
 
     // Start with one Duke card and 2 coins
     this.cards = [new Card(CARD_VARIANT_DUKE)];
-    this.coins = 4;
+    this.coins = 2;
   }
 
   /**
@@ -83,8 +83,8 @@ export default class Player {
    * @param uuid - UUID of the desired card.
    * @returns The matching Card, or undefined if not found.
    */
-  public getCardByUUID(uuid: string): Card | undefined {
-    return this.cards.find((c) => c.uuid === uuid);
+  public getCardByUUID(uuid: string): Card {
+    return this.cards.find((c) => c.uuid === uuid)!;
   }
 
   /**

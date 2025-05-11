@@ -1,6 +1,7 @@
 import AmbassadorCase from './cases/AmbassadorCase.ts';
 import AssassinCase from './cases/AssassinCase.ts';
 import CoupCase from './cases/CoupCase.ts';
+import CaptainCase from './cases/CaptainCase.ts';
 import DukeCase from './cases/DukeCase.ts';
 import ForeignAidCase from './cases/ForeignAidCase.ts';
 import IncomeCase from './cases/IncomeCase.ts';
@@ -54,6 +55,11 @@ export default function initializeNamespace(
       const foreignAidCase = new ForeignAidCase(match.getGameState());
 
       foreignAidCase.foreignAid();
+    });
+    socket.on('STEAL_COINS', () => {
+      const ambassadorCase = new CaptainCase(match.getGameState());
+
+      ambassadorCase.stealTwoCoins();
     });
   });
 }

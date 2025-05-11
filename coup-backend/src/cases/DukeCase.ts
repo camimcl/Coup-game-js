@@ -1,8 +1,7 @@
 /* eslint-disable no-console */
 import { PROMPT_OPTION_CHALLENGE_ACCEPT } from '../constants/promptOptions.ts';
 import askPlayerToChooseCard from './utils.ts';
-import { CARD_VARIANT_ASSASSIN, CARD_VARIANT_DUKE } from '../constants/cardVariants.ts';
-import Card from '../core/entities/Card.ts';
+import { CARD_VARIANT_DUKE } from '../constants/cardVariants.ts';
 import Player from '../core/entities/Player.ts';
 import BaseCase from './BaseCase.ts';
 
@@ -66,7 +65,7 @@ export default class DukeCase extends BaseCase {
 
     console.debug(`${this.currentPlayer.name} receives a new card and discard the Duke card`);
 
-    this.gameState.discardRevealedCard(chosenCard, this.currentPlayer);
+    this.gameState.placeCardIntoDeckAndReceiveAnother(chosenCard, this.currentPlayer);
 
     console.debug(`Performing the Duke action and giving 3 coins to ${this.currentPlayer.name}`);
 

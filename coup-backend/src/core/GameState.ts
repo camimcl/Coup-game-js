@@ -102,7 +102,7 @@ export default class GameState {
   }
 
   // put the revealed card in the deck, shuffle, and draw a new one
-  public discardRevealedCard(cardUUID: string, player: Player): void {
+  public placeCardIntoDeckAndReceiveAnother(cardUUID: string, player: Player): void {
     const discarded = player.removeCardByUUID(cardUUID);
 
     this.deck.pushAndShuffle(discarded);
