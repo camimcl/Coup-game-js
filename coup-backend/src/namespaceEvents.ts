@@ -1,6 +1,8 @@
 import AmbassadorCase from './cases/AmbassadorCase.ts';
 import AssassinCase from './cases/AssassinCase.ts';
+import CoupCase from './cases/CoupCase.ts';
 import DukeCase from './cases/DukeCase.ts';
+import ForeignAidCase from './cases/ForeignAidCase.ts';
 import IncomeCase from './cases/IncomeCase.ts';
 import Player from './core/entities/Player.ts';
 import Match from './core/Match.ts';
@@ -42,6 +44,16 @@ export default function initializeNamespace(
       const ambassadorCase = new AmbassadorCase(match.getGameState());
 
       ambassadorCase.exchangeCards();
+    });
+    socket.on('COUP', () => {
+      const coupCase = new CoupCase(match.getGameState());
+
+      coupCase.execute();
+    });
+    socket.on('FOREIGN_AID', () => {
+      const foreignAidCase = new ForeignAidCase(match.getGameState());
+
+      foreignAidCase.foreignAid();
     });
   });
 }
