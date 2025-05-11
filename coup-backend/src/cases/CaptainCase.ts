@@ -38,7 +38,7 @@ export default class CaptainCase extends BaseCase {
   }
 
   doRobbery() {
-    this.targetPlayer.addCoins(-2);
+    this.targetPlayer.removeCoins(2);
 
     this.currentPlayer.addCoins(2);
   }

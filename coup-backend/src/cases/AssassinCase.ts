@@ -56,7 +56,7 @@ export default class AssassinCase extends BaseCase {
    */
   private payCoins(): void {
     console.debug(`${this.currentPlayer.name} paga 3 moedas para assassinar.`);
-    this.currentPlayer.addCoins(-3);
+    this.currentPlayer.removeCoins(3);
   }
 
   /**

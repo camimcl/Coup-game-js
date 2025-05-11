@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { PROMPT_OPTION_CHALLENGE_ACCEPT } from '../constants/promptOptions.ts';
 import askPlayerToChooseCard from './utils.ts';
 import { CARD_VARIANT_DUKE } from '../constants/cardVariants.ts';
@@ -5,9 +6,9 @@ import BaseCase from './BaseCase.ts';
 import Player from '../core/entities/Player.ts';
 
 export default class ForeignAidCase extends BaseCase {
-  private challengerPlayer: Player | null = null;
+  private challengerPlayer!: Player;
 
-  async foreignAid() {
+  async askForeignAid() {
     const {
       challengerId,
       response: challengeToAid,
@@ -19,6 +20,7 @@ export default class ForeignAidCase extends BaseCase {
     } else {
       // Ninguém contestou. Ação bem-sucedida.
       this.currentPlayer.addCoins(2);
+
       console.debug(`${this.currentPlayer.name} recebeu 2 moedas (auxílio externo)`);
     }
 
@@ -27,26 +29,23 @@ export default class ForeignAidCase extends BaseCase {
 
   private async resolveDukeBlock(challengerId: string) {
     this.challengerPlayer = this.gameState.getPlayerByUUID(challengerId);
-    const namespace = this.gameState.getNamespace();
 
-    const {
-      challengerId: counterChallengerId,
-      response: challengeToDuke,
-    } = await this.emitChallengeToOtherPlayers(`${this.challengerPlayer!.name} bloqueou o auxílio externo dizendo ser Duque. Alguém deseja contestar isso?`);
+    const message = `${this.challengerPlayer!.name} bloqueou o auxílio externo dizendo ser Duque. Deseja contestar?`;
 
-    if (challengeToDuke === PROMPT_OPTION_CHALLENGE_ACCEPT) {
-      await this.resolveChallengeToDuke(counterChallengerId!);
+    const response = await this.emitChallengeToPlayer(message, this.currentPlayer.socket);
+
+    if (response === PROMPT_OPTION_CHALLENGE_ACCEPT) {
+      await this.resolveChallengeToDuke();
     } else {
       // Ninguém contestou o Duque. Bloqueio é bem-sucedido.
       console.debug(`O bloqueio do Duque por ${this.challengerPlayer.name} foi aceito. ${this.currentPlayer.name} não recebe moedas.`);
     }
   }
 
-  private async resolveChallengeToDuke(counterChallengerId: string) {
+  private async resolveChallengeToDuke() {
     const namespace = this.gameState.getNamespace();
-    const counterChallenger = this.gameState.getPlayerByUUID(counterChallengerId);
 
-    console.debug(`${counterChallenger.name} contestou o Duque de ${this.challengerPlayer!.name}`);
+    console.debug(`${this.currentPlayer.name} contestou o Duque de ${this.challengerPlayer.name}`);
 
     // Duque revela carta
     const dukeCardUUID = await askPlayerToChooseCard(namespace, this.challengerPlayer!);
@@ -58,14 +57,16 @@ export default class ForeignAidCase extends BaseCase {
 
       // A ação de auxílio externo volta a valer
       this.currentPlayer.addCoins(2);
+
       console.debug(`Contestação bem-sucedida! ${this.currentPlayer.name} recebe 2 moedas.`);
     } else {
       // Duque era verdadeiro — contra-contestador perde carta
-      const counterChallengerCardUUID = await askPlayerToChooseCard(namespace, counterChallenger);
-      this.gameState.discardPlayerCard(counterChallengerCardUUID, counterChallenger);
+      const cardUUID = await askPlayerToChooseCard(namespace, this.currentPlayer);
+
+      this.gameState.discardPlayerCard(cardUUID, this.currentPlayer);
 
       // Duque revela e troca carta
-      this.gameState.discardRevealedCard(revealedCard, this.challengerPlayer!);
+      this.gameState.placeCardIntoDeckAndReceiveAnother(revealedCard.uuid, this.challengerPlayer!);
 
       console.debug(`Contestação ao Duque falhou. ${this.currentPlayer.name} não recebe moedas.`);
     }

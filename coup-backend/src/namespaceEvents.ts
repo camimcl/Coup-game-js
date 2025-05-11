@@ -54,7 +54,7 @@ export default function initializeNamespace(
     socket.on('FOREIGN_AID', () => {
       const foreignAidCase = new ForeignAidCase(match.getGameState());
 
-      foreignAidCase.foreignAid();
+      foreignAidCase.askForeignAid();
     });
     socket.on('STEAL_COINS', () => {
       const ambassadorCase = new CaptainCase(match.getGameState());
