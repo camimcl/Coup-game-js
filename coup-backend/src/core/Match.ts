@@ -1,8 +1,8 @@
 import { Namespace, Server } from 'socket.io';
+import EventEmitter from 'events';
 import Player from './entities/Player.ts';
 import GameState from './GameState.ts';
 import { GAME_START } from '../constants/events.ts';
-import { internalBus } from '../namespaceEvents.ts';
 
 /**
  * Manages a single game match: its players, state, and Socket.IO namespace.
@@ -26,23 +26,26 @@ export default class Match {
   /** Socket.IO namespace dedicated to this match. */
   private namespace: Namespace;
 
+  readonly internalBus: EventEmitter;
+
   /**
    * Creates a new Match.
    *
    * @param players - Initial list of players in the match.
    * @param server  - Socket.IO server instance to create a namespace on.
    */
-  constructor(players: Player[], server: Server) {
+  constructor(internalBus: EventEmitter, players: Player[], server: Server) {
     this.players = players;
     this.uuid = '123'; // TODO: replace with real UUID generation
     this.namespace = server.of(this.uuid);
+    this.internalBus = internalBus;
     this.gameState = new GameState(this.namespace, this.players);
   }
 
   public startMatch() {
-    console.debug(`Starting match with id: ${this.uuid}`);
+    console.debug(`Starting match: ${this.uuid}`);
 
-    internalBus.emit(GAME_START);
+    this.internalBus.emit(GAME_START);
   }
 
   /**

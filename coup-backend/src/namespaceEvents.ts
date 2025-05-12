@@ -11,7 +11,6 @@ import Match from './core/Match.ts';
 import { GAME_START, NEXT_TURN } from './constants/events.ts';
 import { emitPromptToPlayer, PromptOption } from './cases/utils.ts';
 
-export const internalBus = new EventEmitter();
 
 export default function initializeNamespace(
   match: Match,
@@ -64,13 +63,13 @@ export default function initializeNamespace(
     });
   }
 
-  internalBus.on(NEXT_TURN, () => {
+  match.internalBus.on(NEXT_TURN, () => {
     console.debug('Starting next turn');
 
     startTurn();
   });
 
-  internalBus.on(GAME_START, () => {
+  match.internalBus.on(GAME_START, () => {
     console.debug('Starting game');
 
     startTurn();

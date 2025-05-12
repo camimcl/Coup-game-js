@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import path from 'path';
 import http from 'http';
 import { Server } from 'socket.io';
+import EventEmitter from 'events';
 import Match from './core/Match.ts';
 import initializeNamespace from './namespaceEvents.ts';
 
@@ -22,7 +23,7 @@ app.get('/', (_req: Request, res: Response) => {
 });
 
 app.post('/create-match', (request: Request, response: Response) => {
-  const match = new Match([], server);
+  const match = new Match(new EventEmitter(), [], server);
 
   matches[match.getUUID().replace('/', '')] = match;
 
