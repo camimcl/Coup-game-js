@@ -2,9 +2,16 @@ import BaseCase from './BaseCase.ts';
 import { PROMPT_OPTION_CHALLENGE_ACCEPT } from '../constants/promptOptions.ts';
 import { CARD_VARIANT_AMBASSADOR } from '../constants/cardVariants.ts';
 import askPlayerToChooseCard, { askPlayerToChooseTwoCards } from './utils.ts';
+import GameState from '../core/GameState.ts';
 
 export default class AmbassadorCase extends BaseCase {
+  constructor(gameState: GameState) {
+    super('Embassador', gameState);
+  }
+
   public async exchangeCards(): Promise<void> {
+    this.currentPlayer = this.gameState.getCurrentTurnPlayer();
+
     const {
       challengerId,
       response,

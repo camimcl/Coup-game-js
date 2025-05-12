@@ -4,11 +4,18 @@ import askPlayerToChooseCard from './utils.ts';
 import { CARD_VARIANT_DUKE } from '../constants/cardVariants.ts';
 import BaseCase from './BaseCase.ts';
 import Player from '../core/entities/Player.ts';
+import GameState from '../core/GameState.ts';
 
 export default class ForeignAidCase extends BaseCase {
   private challengerPlayer!: Player;
 
+  constructor(gameState: GameState) {
+    super('Foreign Aid', gameState);
+  }
+
   async askForeignAid() {
+    this.currentPlayer = this.gameState.getCurrentTurnPlayer();
+
     const {
       challengerId,
       response: challengeToAid,

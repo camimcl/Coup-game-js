@@ -1,15 +1,22 @@
 import askPlayerToChooseCard from './utils.ts';
 import BaseCase from './BaseCase.ts';
 import Player from '../core/entities/Player.ts';
+import GameState from '../core/GameState.ts';
 
 export default class CoupCase extends BaseCase {
   private targetPlayer!: Player;
 
+  constructor(gameState: GameState) {
+    super('Coup', gameState);
+  }
+
   public canExecute(): boolean {
-    return this.currentPlayer.getCoinsAmount() >= 7;
+    return this.gameState.getCurrentTurnPlayer().getCoinsAmount() >= 7;
   }
 
   async execute() {
+    this.currentPlayer = this.gameState.getCurrentTurnPlayer();
+
     const coins = this.currentPlayer.getCoinsAmount();
 
     // Impedir execução da ação se não tiver moedas suficientes

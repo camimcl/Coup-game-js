@@ -1,5 +1,5 @@
 import { Socket } from 'socket.io';
-import { PROMPT_RESPONSE } from '../constants/events.ts';
+import { NEXT_TURN, PROMPT_RESPONSE } from '../constants/events.ts';
 import { PROMPT_OPTION_CHALLENGE_ACCEPT, PROMPT_OPTION_CHALLENGE_PASS, PROMPT_OPTION_VALUE } from '../constants/promptOptions.ts';
 import Player from '../core/entities/Player.ts';
 import GameState from '../core/GameState.ts';
@@ -9,15 +9,22 @@ import { emitPromptToOtherPlayers, emitPromptToPlayer, PromptOption } from './ut
 export default abstract class BaseCase {
   protected gameState: GameState;
 
+  private caseName: string;
+
   protected currentPlayer: Player;
 
-  public constructor(gameState: GameState) {
+  public constructor(caseName: string, gameState: GameState) {
     this.gameState = gameState;
+    this.caseName = caseName;
     this.currentPlayer = gameState.getCurrentTurnPlayer();
   }
 
+  public getCaseName() {
+    return this.caseName;
+  }
+
   public canExecute(): boolean {
-    return this.currentPlayer.getCoinsAmount() < 10;
+    return this.gameState.getCurrentTurnPlayer().getCoinsAmount() < 10;
   }
 
   protected async emitChallengeToPlayer(message: string, targetSocket: Socket)
@@ -130,5 +137,9 @@ export default abstract class BaseCase {
     console.log('Finishing turn');
 
     this.gameState.goToNextTurn();
+
+    const namespace = this.gameState.getNamespace();
+
+    namespace.emit(NEXT_TURN);
   }
 }

@@ -2,6 +2,7 @@
 import { CARD_VARIANT_AMBASSADOR, CARD_VARIANT_CAPTAIN } from '../constants/cardVariants.ts';
 import { PROMPT_OPTION_CHALLENGE_ACCEPT, PROMPT_OPTION_CHALLENGE_PASS } from '../constants/promptOptions.ts';
 import Player from '../core/entities/Player.ts';
+import GameState from '../core/GameState.ts';
 import BaseCase from './BaseCase.ts';
 import askPlayerToChooseCard from './utils.ts';
 
@@ -18,6 +19,10 @@ export default class CaptainCase extends BaseCase {
   /** The player being targeted for assassination. */
   private targetPlayer!: Player;
 
+  constructor(gameState: GameState) {
+    super('Steal Two Coins', gameState);
+  }
+
   public canExecute(): boolean {
     const players = this.gameState.getActivePlayers();
 
@@ -26,6 +31,8 @@ export default class CaptainCase extends BaseCase {
 
   // Assumes at least one target has two or more coins
   public async stealTwoCoins() {
+    this.currentPlayer = this.gameState.getCurrentTurnPlayer();
+
     await this.promptChooseTarget();
 
     const defenseChoice = await this.promptTargetDefense();

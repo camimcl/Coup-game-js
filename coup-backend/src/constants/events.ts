@@ -24,3 +24,6 @@ export const ENTER_MATCH = 'ENTER_MATCH';
 
 // Used when a player leaves a match
 export const LEAVE_MATCH = 'LEAVE_MATCH';
+
+export const NEXT_TURN = 'NEXT_TURN';
+export const GAME_START = 'GAME_START';

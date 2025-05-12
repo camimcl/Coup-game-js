@@ -2,6 +2,8 @@ import { Namespace } from 'socket.io';
 import Card from './entities/Card.ts';
 import Player from './entities/Player.ts';
 import Deck from './entities/Deck.ts';
+import { GAME_START, NEXT_TURN } from '../constants/events.ts';
+import { internalBus } from '../namespaceEvents.ts';
 
 /**
  * Manages the full state of a match:
@@ -12,9 +14,6 @@ export default class GameState {
 
   /** Index of the player whose turn it is. */
   private currentTurnPlayerIndex: number = 0;
-
-  /** Index of the player targeted for action this turn. */
-  private currentTurnTargetIndex: number = 0;
 
   /** Shared deck of cards to draw from or discard into. */
   private deck: Deck;
@@ -79,7 +78,8 @@ export default class GameState {
     if (this.players.length === 0) return;
 
     this.currentTurnPlayerIndex = (this.currentTurnPlayerIndex + 1) % this.players.length;
-    this.currentTurnTargetIndex = this.currentTurnPlayerIndex;
+
+    internalBus.emit(NEXT_TURN);
 
     this.broadcastState();
   }
@@ -143,11 +143,6 @@ export default class GameState {
     return this.players[this.currentTurnPlayerIndex];
   }
 
-  /** @returns The player targeted for action this turn. */
-  public getCurrentTurnTarget(): Player {
-    return this.players[this.currentTurnTargetIndex];
-  }
-
   /** @returns All active players. */
   public getActivePlayers(): Player[] {
     return [...this.players];
@@ -178,7 +173,6 @@ export default class GameState {
       players: this.players.map((p) => p.name),
       eliminated: this.eliminatedPlayers.map((p) => p.name),
       currentTurnPlayer: this.getCurrentTurnPlayer()?.uuid,
-      currentTurnTarget: this.getCurrentTurnTarget()?.uuid,
       deckSize: this.deck.size(),
     });
   }

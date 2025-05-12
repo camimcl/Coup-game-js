@@ -4,6 +4,7 @@ import askPlayerToChooseCard from './utils.ts';
 import Player from '../core/entities/Player.ts';
 import { CARD_VARIANT_ASSASSIN, CARD_VARIANT_CONDESSA } from '../constants/cardVariants.ts';
 import { PROMPT_OPTION_CHALLENGE_ACCEPT, PROMPT_OPTION_CHALLENGE_PASS } from '../constants/promptOptions.ts';
+import GameState from '../core/GameState.ts';
 
 /**
  * Handles the Assassin action:
@@ -13,14 +14,20 @@ export default class AssassinCase extends BaseCase {
   /** The player being targeted for assassination. */
   private targetPlayer!: Player;
 
+  constructor(gameState: GameState) {
+    super('Kill', gameState);
+  }
+
   public canExecute(): boolean {
-    return this.currentPlayer.getCoinsAmount() >= 3 && super.canExecute();
+    return this.gameState.getCurrentTurnPlayer().getCoinsAmount() >= 3 && super.canExecute();
   }
 
   /**
    * Orchestrates the full assassination sequence.
    */
   public async execute(): Promise<void> {
+    this.currentPlayer = this.gameState.getCurrentTurnPlayer();
+
     this.verifyCoins();
     this.payCoins();
 

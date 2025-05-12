@@ -1,8 +1,15 @@
+import GameState from '../core/GameState.ts';
 import BaseCase from './BaseCase.ts';
 
 /// player takes 1 coin (unchallengeable)
 export default class IncomeCase extends BaseCase {
+  constructor(gameState: GameState) {
+    super('Income', gameState);
+  }
+
   public async getIncome(): Promise<void> {
+    this.currentPlayer = this.gameState.getCurrentTurnPlayer();
+
     this.giveIncome();
 
     this.finishTurn();

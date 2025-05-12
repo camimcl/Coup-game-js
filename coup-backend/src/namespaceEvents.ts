@@ -1,3 +1,4 @@
+import { EventEmitter } from 'events';
 import AmbassadorCase from './cases/AmbassadorCase.ts';
 import AssassinCase from './cases/AssassinCase.ts';
 import CoupCase from './cases/CoupCase.ts';
@@ -7,11 +8,34 @@ import ForeignAidCase from './cases/ForeignAidCase.ts';
 import IncomeCase from './cases/IncomeCase.ts';
 import Player from './core/entities/Player.ts';
 import Match from './core/Match.ts';
+import { GAME_START, NEXT_TURN } from './constants/events.ts';
+import { emitPromptToPlayer, PromptOption } from './cases/utils.ts';
+
+export const internalBus = new EventEmitter();
 
 export default function initializeNamespace(
   match: Match,
 ) {
   const namespace = match.getNamespace();
+  const gameState = match.getGameState();
+
+  const assassinCase = new AssassinCase(gameState);
+  const dukeCase = new DukeCase(gameState);
+  const incomeCase = new IncomeCase(gameState);
+  const ambassadorCase = new AmbassadorCase(gameState);
+  const coupCase = new CoupCase(gameState);
+  const foreignAidCase = new ForeignAidCase(gameState);
+  const captainCase = new CaptainCase(gameState);
+
+  const cases = [
+    ambassadorCase,
+    assassinCase,
+    captainCase,
+    coupCase,
+    dukeCase,
+    foreignAidCase,
+    incomeCase,
+  ];
 
   namespace.on('connection', (socket) => {
     // eslint-disable-next-line no-console
@@ -23,43 +47,32 @@ export default function initializeNamespace(
       // eslint-disable-next-line no-console
       console.log(`Player ${socket.id} has left the room ${namespace.name}`);
     });
+  });
 
-    socket.on('DUKE', () => {
-      const dukeCase = new DukeCase(match.getGameState());
+  function startTurn() {
+    const availableOptions: PromptOption[] = cases
+      .filter((c) => c.canExecute())
+      .map((c) => ({ label: c.getCaseName(), value: c.getCaseName() }));
 
-      dukeCase.tax();
+    const player = match.getGameState().getCurrentTurnPlayer();
+
+    emitPromptToPlayer({
+      message: 'O que deseja fazer',
+      namespace,
+      options: availableOptions,
+      socket: player.socket,
     });
+  }
 
-    socket.on('ASSASSIN', () => {
-      const assassinCase = new AssassinCase(match.getGameState());
+  internalBus.on(NEXT_TURN, () => {
+    console.debug('Starting next turn');
 
-      assassinCase.execute();
-    });
-    socket.on('INCOME', () => {
-      const incomeCase = new IncomeCase(match.getGameState());
+    startTurn();
+  });
 
-      incomeCase.getIncome();
-    });
+  internalBus.on(GAME_START, () => {
+    console.debug('Starting game');
 
-    socket.on('EXCHANGE', () => {
-      const ambassadorCase = new AmbassadorCase(match.getGameState());
-
-      ambassadorCase.exchangeCards();
-    });
-    socket.on('COUP', () => {
-      const coupCase = new CoupCase(match.getGameState());
-
-      coupCase.execute();
-    });
-    socket.on('FOREIGN_AID', () => {
-      const foreignAidCase = new ForeignAidCase(match.getGameState());
-
-      foreignAidCase.askForeignAid();
-    });
-    socket.on('STEAL_COINS', () => {
-      const ambassadorCase = new CaptainCase(match.getGameState());
-
-      ambassadorCase.stealTwoCoins();
-    });
+    startTurn();
   });
 }
