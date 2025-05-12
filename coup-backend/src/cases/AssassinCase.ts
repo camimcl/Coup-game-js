@@ -25,7 +25,7 @@ export default class AssassinCase extends BaseCase {
   /**
    * Orchestrates the full assassination sequence.
    */
-  public async execute(): Promise<void> {
+  public async runCase(): Promise<void> {
     this.currentPlayer = this.gameState.getCurrentTurnPlayer();
 
     this.verifyCoins();

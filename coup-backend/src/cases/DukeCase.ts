@@ -13,7 +13,7 @@ export default class DukeCase extends BaseCase {
     super('Tax', gameState);
   }
 
-  async tax() {
+  async runCase() {
     this.currentPlayer = this.gameState.getCurrentTurnPlayer();
 
     const {
@@ -72,7 +72,7 @@ export default class DukeCase extends BaseCase {
 
     console.debug(`${this.currentPlayer.name} receives a new card and discard the Duke card`);
 
-    this.gameState.placeCardIntoDeckAndReceiveAnother(chosenCard, this.currentPlayer);
+    this.gameState.placeCardIntoDeckAndReceiveAnother(chosenCard.uuid, this.currentPlayer);
 
     console.debug(`Performing the Duke action and giving 3 coins to ${this.currentPlayer.name}`);
 

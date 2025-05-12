@@ -9,7 +9,7 @@ export default class AmbassadorCase extends BaseCase {
     super('Embassador', gameState);
   }
 
-  public async exchangeCards(): Promise<void> {
+  public async runCase(): Promise<void> {
     this.currentPlayer = this.gameState.getCurrentTurnPlayer();
 
     const {

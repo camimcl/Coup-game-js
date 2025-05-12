@@ -27,6 +27,10 @@ export default abstract class BaseCase {
     return this.gameState.getCurrentTurnPlayer().getCoinsAmount() < 10;
   }
 
+  public async runCase() {
+    throw new Error(`${this.caseName} is not implemented`);
+  }
+
   protected async emitChallengeToPlayer(message: string, targetSocket: Socket)
     : Promise<(typeof PROMPT_OPTION_CHALLENGE_ACCEPT | typeof PROMPT_OPTION_CHALLENGE_PASS)> {
     const options = [

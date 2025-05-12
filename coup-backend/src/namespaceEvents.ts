@@ -8,9 +8,11 @@ import ForeignAidCase from './cases/ForeignAidCase.ts';
 import IncomeCase from './cases/IncomeCase.ts';
 import Player from './core/entities/Player.ts';
 import Match from './core/Match.ts';
-import { GAME_START, NEXT_TURN } from './constants/events.ts';
+import {
+  GAME_START, MESSAGE, NEXT_TURN, PROMPT_RESPONSE,
+} from './constants/events.ts';
 import { emitPromptToPlayer, PromptOption } from './cases/utils.ts';
-
+import BaseCase from './cases/BaseCase.ts';
 
 export default function initializeNamespace(
   match: Match,
@@ -26,15 +28,15 @@ export default function initializeNamespace(
   const foreignAidCase = new ForeignAidCase(gameState);
   const captainCase = new CaptainCase(gameState);
 
-  const cases = [
-    ambassadorCase,
-    assassinCase,
-    captainCase,
-    coupCase,
-    dukeCase,
-    foreignAidCase,
-    incomeCase,
-  ];
+  const cases: { [key: string]: BaseCase } = {
+    [assassinCase.getCaseName()]: assassinCase,
+    [dukeCase.getCaseName()]: dukeCase,
+    [incomeCase.getCaseName()]: incomeCase,
+    [ambassadorCase.getCaseName()]: ambassadorCase,
+    [coupCase.getCaseName()]: coupCase,
+    [foreignAidCase.getCaseName()]: foreignAidCase,
+    [captainCase.getCaseName()]: captainCase,
+  };
 
   namespace.on('connection', (socket) => {
     // eslint-disable-next-line no-console
@@ -48,8 +50,8 @@ export default function initializeNamespace(
     });
   });
 
-  function startTurn() {
-    const availableOptions: PromptOption[] = cases
+  async function startTurn() {
+    const availableOptions: PromptOption[] = Object.values(cases)
       .filter((c) => c.canExecute())
       .map((c) => ({ label: c.getCaseName(), value: c.getCaseName() }));
 
@@ -61,6 +63,23 @@ export default function initializeNamespace(
       options: availableOptions,
       socket: player.socket,
     });
+
+    const response = await new Promise<string>((resolve) => {
+      const timeout = setTimeout(() => resolve(availableOptions[0].value.toString()), 5000);
+
+      player.socket.once(PROMPT_RESPONSE, (res: string) => {
+        clearTimeout(timeout);
+        resolve(res);
+      });
+    });
+
+    const chosenCase = cases[response];
+
+    if (!chosenCase || !chosenCase.canExecute()) {
+      player.socket.emit(MESSAGE, { message: 'Cannot execute the given actions' });
+    } else {
+      chosenCase.runCase();
+    }
   }
 
   match.internalBus.on(NEXT_TURN, () => {

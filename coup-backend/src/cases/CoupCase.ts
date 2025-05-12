@@ -14,7 +14,7 @@ export default class CoupCase extends BaseCase {
     return this.gameState.getCurrentTurnPlayer().getCoinsAmount() >= 7;
   }
 
-  async execute() {
+  async runCase() {
     this.currentPlayer = this.gameState.getCurrentTurnPlayer();
 
     const coins = this.currentPlayer.getCoinsAmount();

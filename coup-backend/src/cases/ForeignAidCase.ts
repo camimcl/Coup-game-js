@@ -13,7 +13,7 @@ export default class ForeignAidCase extends BaseCase {
     super('Foreign Aid', gameState);
   }
 
-  async askForeignAid() {
+  async runCase() {
     this.currentPlayer = this.gameState.getCurrentTurnPlayer();
 
     const {

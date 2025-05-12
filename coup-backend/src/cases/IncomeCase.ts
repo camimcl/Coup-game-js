@@ -7,7 +7,7 @@ export default class IncomeCase extends BaseCase {
     super('Income', gameState);
   }
 
-  public async getIncome(): Promise<void> {
+  public async runCase(): Promise<void> {
     this.currentPlayer = this.gameState.getCurrentTurnPlayer();
 
     this.giveIncome();

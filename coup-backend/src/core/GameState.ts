@@ -1,9 +1,9 @@
 import { Namespace } from 'socket.io';
+import EventEmitter from 'events';
 import Card from './entities/Card.ts';
 import Player from './entities/Player.ts';
 import Deck from './entities/Deck.ts';
-import { GAME_START, NEXT_TURN } from '../constants/events.ts';
-import { internalBus } from '../namespaceEvents.ts';
+import { NEXT_TURN } from '../constants/events.ts';
 
 /**
  * Manages the full state of a match:
@@ -33,17 +33,20 @@ export default class GameState {
   /** Socket.IO namespace for broadcasting game-state events. */
   private readonly namespace: Namespace;
 
+  readonly internalBus: EventEmitter;
+
   /**
    * Initializes a new game state.
    *
    * @param namespace - Namespace for emitting state updates.
    * @param players   - Starting list of players.
    */
-  constructor(namespace: Namespace, players: Player[]) {
+  constructor(internalBus: EventEmitter, namespace: Namespace, players: Player[]) {
     this.namespace = namespace;
     this.players = players;
     this.deck = new Deck(players.length);
     this.uuid = '123';
+    this.internalBus = internalBus;
 
     this.dealInitialHands();
     this.broadcastState();
@@ -79,9 +82,11 @@ export default class GameState {
 
     this.currentTurnPlayerIndex = (this.currentTurnPlayerIndex + 1) % this.players.length;
 
-    internalBus.emit(NEXT_TURN);
+    this.internalBus.emit(NEXT_TURN);
 
     this.broadcastState();
+
+    // Check if game is over
   }
 
   /**

@@ -30,7 +30,7 @@ export default class CaptainCase extends BaseCase {
   }
 
   // Assumes at least one target has two or more coins
-  public async stealTwoCoins() {
+  public async runCase() {
     this.currentPlayer = this.gameState.getCurrentTurnPlayer();
 
     await this.promptChooseTarget();

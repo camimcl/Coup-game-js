@@ -39,7 +39,7 @@ export default class Match {
     this.uuid = '123'; // TODO: replace with real UUID generation
     this.namespace = server.of(this.uuid);
     this.internalBus = internalBus;
-    this.gameState = new GameState(this.namespace, this.players);
+    this.gameState = new GameState(internalBus, this.namespace, this.players);
   }
 
   public startMatch() {

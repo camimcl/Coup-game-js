@@ -27,3 +27,4 @@ export const LEAVE_MATCH = 'LEAVE_MATCH';
 
 export const NEXT_TURN = 'NEXT_TURN';
 export const GAME_START = 'GAME_START';
+export const MESSAGE = 'MESSAGE';
