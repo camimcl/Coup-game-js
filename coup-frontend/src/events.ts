@@ -54,5 +54,3 @@ export const CARD_DISCARDED = 'CARD_DISCARDED';
 
 // Used to let everyone know that a player is placing a card into the deck
 export const PLACE_CARD_INTO_DECK = 'PLACE_CARD_INTO_DECK';
-
-export const PLAYER_COUNT_UPDATE = 'PLAYER_COUNT_UPDATE';

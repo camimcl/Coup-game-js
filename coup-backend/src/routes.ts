@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import cors from 'cors';
 import path from 'path';
 import http from 'http';
 import { Server } from 'socket.io';
@@ -12,9 +13,16 @@ app.use(express.static(path.join(__dirname, '../public/')));
 
 const httpServer = http.createServer(app);
 
-const server = new Server(httpServer);
+const server = new Server(httpServer, {
+  cors: {
+    origin: 'http://localhost:5173',
+    methods: ['GET', 'POST'],
+    credentials: false,
+  },
+});
 
 app.use(express.json());
+app.use(cors<Request>());
 
 const matches: { [key: string]: Match } = {};
 
@@ -22,17 +30,19 @@ app.get('/', (_req: Request, res: Response) => {
   res.json({ status: 'ok' });
 });
 
-app.post('/create-match', (request: Request, response: Response) => {
+app.post('/api/create-match', (request: Request, response: Response) => {
   const match = new Match(new EventEmitter(), [], server);
 
   matches[match.getUUID().replace('/', '')] = match;
 
   initializeNamespace(match);
 
-  response.json({ message: `Created match ${match.getUUID()}` });
+  console.debug(`Created match ${match.getUUID()}`);
+
+  response.json({ matchId: match.getUUID() });
 });
 
-app.post('/start-match/:id', (request: Request, response: Response) => {
+app.post('/api/start-match/:id', (request: Request, response: Response) => {
   const { id } = request.params;
 
   const match = matches[id];

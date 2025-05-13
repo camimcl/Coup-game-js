@@ -1,0 +1,46 @@
+@use "./variables" as variables;
+
+/* 1. Box sizing reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* 2. Remove default margins */
+body, h1, h2, h3, h4, h5, h6, p, ul, ol, figure, blockquote {
+  margin: 0;
+  padding: 0;
+}
+
+/* 3. Core body styles */
+body {
+  font-family: variables.$font-family-base;
+  font-size: variables.$font-size-base;
+  line-height: variables.$line-height-base;
+  color: variables.$color-text;
+  background-color: variables.$color-bg;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 4. Headings */
+h1, h2, h3, h4, h5, h6 {
+  color: variables.$color-text;
+  font-weight: 600;
+}
+
+/* 5. Links */
+a {
+  color: variables.$color-primary;
+  text-decoration: none;
+  &:hover { text-decoration: underline; }
+}
+
+/* 6. Lists */
+ul, ol {
+  list-style: none;
+}
+
+/* 7. Images & media */
+img, video {
+  max-width: 100%;
+  display: block;
+}

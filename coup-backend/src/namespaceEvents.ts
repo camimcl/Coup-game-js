@@ -47,6 +47,8 @@ export default function initializeNamespace(
     socket.on('disconnect', () => {
       // eslint-disable-next-line no-console
       console.log(`Player ${socket.id} has left the room ${namespace.name}`);
+
+      match.removePlayer(socket.id);
     });
   });
 

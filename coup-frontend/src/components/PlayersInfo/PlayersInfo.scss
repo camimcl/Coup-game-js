@@ -1,0 +1,34 @@
+@use "../../styles/variables" as variables;
+
+.players-around-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+.player-item {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.player-name {
+  font-size: 0.9rem;
+  margin-bottom: variables.$space-1;
+  color: variables.$color-muted;
+  color: variables.$color-muted;
+}
+
+.player-cards {
+  gap: variables.$space-1;
+  gap: variables.$space-1;
+}
+
+.card-back {
+  width: 1.5rem;
+  height: 2rem;
+  background-image: url('/assets/card-back.svg');
+  border-radius: variables.$radius-sm;
+  box-shadow: variables.$shadow-xs;
+  box-shadow: variables.$shadow-xs;
+}

@@ -1,0 +1,43 @@
+// — Spacing
+@each $name, $size in (0: 0, 1: $space-1, 2: $space-2, 3: $space-3, 4: $space-4, 5: $space-5) {
+  .m-#{$name} { margin: $size !important; }
+  .mt-#{$name} { margin-top: $size !important; }
+  .mr-#{$name} { margin-right: $size !important; }
+  .mb-#{$name} { margin-bottom: $size !important; }
+  .ml-#{$name} { margin-left: $size !important; }
+  .p-#{$name} { padding: $size !important; }
+  .pt-#{$name} { padding-top: $size !important; }
+  .pr-#{$name} { padding-right: $size !important; }
+  .pb-#{$name} { padding-bottom: $size !important; }
+  .pl-#{$name} { padding-left: $size !important; }
+}
+
+// — Display
+.d-block   { display: block !important; }
+.d-inline  { display: inline !important; }
+.d-inline-block { display: inline-block !important; }
+.d-flex    { display: flex !important; }
+.d-grid    { display: grid !important; }
+
+// — Flex helpers
+.flex-center       { @include center-absolute(50%, 50%); }
+.flex-center-horiz { display: flex; justify-content: center; }
+.flex-center-vert  { display: flex; align-items: center; }
+.flex-space-between { display: flex; justify-content: space-between; }
+
+// — Text
+.text-center { text-align: center !important; }
+.text-left   { text-align: left !important; }
+.text-right  { text-align: right !important; }
+.truncate    { @include text-truncate; }
+
+// — Borders & radius
+.rounded-sm  { border-radius: $radius-sm !important; }
+.rounded-md  { border-radius: $radius-md !important; }
+.rounded-lg  { border-radius: $radius-lg !important; }
+.border      { border: 1px solid $color-border !important; }
+
+// — Shadow
+.shadow-xs { box-shadow: $shadow-xs !important; }
+.shadow-sm { box-shadow: $shadow-sm !important; }
+.shadow-md { box-shadow: $shadow-md !important; }

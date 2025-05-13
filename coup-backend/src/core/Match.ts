@@ -2,7 +2,7 @@ import { Namespace, Server } from 'socket.io';
 import EventEmitter from 'events';
 import Player from './entities/Player.ts';
 import GameState from './GameState.ts';
-import { GAME_START } from '../constants/events.ts';
+import { GAME_START, PLAYER_COUNT_UPDATE } from '../constants/events.ts';
 
 /**
  * Manages a single game match: its players, state, and Socket.IO namespace.
@@ -16,6 +16,8 @@ export default class Match {
 
   /** Indicates whether the match has ended. */
   private hasEnded: boolean = false;
+
+  private inProgress: boolean = false;
 
   /** The winning player, if the match has concluded. */
   private winner: Player | null = null;
@@ -45,9 +47,15 @@ export default class Match {
   public startMatch() {
     console.debug(`Starting match: ${this.uuid}`);
 
+    if (this.inProgress) return;
+
     this.internalBus.emit(GAME_START);
 
+    this.namespace.emit(GAME_START);
+
     this.gameState.startGame();
+
+    this.inProgress = true;
   }
 
   /**
@@ -61,6 +69,8 @@ export default class Match {
       throw new Error('Cannot add player: match has already ended.');
     }
     this.players.push(player);
+
+    this.namespace.emit(PLAYER_COUNT_UPDATE, this.players.length);
   }
 
   /**
@@ -70,6 +80,8 @@ export default class Match {
    */
   removePlayer(uuid: string): void {
     this.players = this.players.filter((p) => p.uuid !== uuid);
+
+    this.namespace.emit(PLAYER_COUNT_UPDATE, this.players.length);
   }
 
   /**

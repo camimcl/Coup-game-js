@@ -1,3 +1,5 @@
+import { Namespace } from 'socket.io';
+
 /**
  * Wraps a success callback and a timeout callback into a single cancellable function.
  *
