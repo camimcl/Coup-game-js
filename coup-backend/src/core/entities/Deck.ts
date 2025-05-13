@@ -76,6 +76,7 @@ export default class Deck {
    */
   public pushAndShuffle(card: Card): void {
     this.cards.push(card);
+
     this.shuffle();
   }
 

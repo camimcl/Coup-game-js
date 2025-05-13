@@ -31,3 +31,10 @@ export const GAME_END = 'GAME_END';
 export const MESSAGE = 'MESSAGE';
 
 export const GAME_STATE_UPDATE = 'GAME_STATE_UPDATE';
+
+export const OWNED_CARD_DISCARDED = 'OWNED_CARD_DISCARDED';
+
+export const PLAYER_DEATH = 'PLAYER_DEATH';
+export const CARD_DRAW = 'CARD_DRAW';
+export const CARD_DISCARDED = 'CARD_DISCARDED';
+export const PLACE_CARD_INTO_DECK = 'PLACE_CARD_INTO_DECK';

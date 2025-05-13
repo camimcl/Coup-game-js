@@ -3,7 +3,10 @@ import EventEmitter from 'events';
 import Card from './entities/Card.ts';
 import Player from './entities/Player.ts';
 import Deck from './entities/Deck.ts';
-import { GAME_END, GAME_STATE_UPDATE, NEXT_TURN } from '../constants/events.ts';
+import {
+  CARD_DRAW,
+  GAME_END, GAME_STATE_UPDATE, NEXT_TURN, OWNED_CARD_DISCARDED, PLACE_CARD_INTO_DECK, PLAYER_DEATH,
+} from '../constants/events.ts';
 
 /**
  * Manages the full state of a match:
@@ -58,8 +61,13 @@ export default class GameState {
 
     this.knownCards.push(discarded);
 
+    player.socket.emit(OWNED_CARD_DISCARDED);
+
     if (player.getCardsClone().length === 0) {
       this.eliminatePlayer(player.uuid);
+
+      // Warns every one that this player has died
+      this.namespace.emit(PLAYER_DEATH, { playerId: player.uuid });
     }
 
     this.broadcastState();
@@ -104,9 +112,15 @@ export default class GameState {
 
   public drawCardForPlayer(player: Player): Card | null {
     const card = this.deck.draw();
+
     if (card) {
       player.addCard(card);
+
+      // Tell player they received a card
+      player.socket.emit(CARD_DRAW, card);
+
       this.broadcastState();
+
       return card;
     }
     return null;
@@ -117,7 +131,11 @@ export default class GameState {
     const discarded = player.removeCardByUUID(cardUUID);
 
     this.deck.pushAndShuffle(discarded);
-    player.addCard(this.deck.draw());
+
+    // Warns everyone that a card was place into the deck
+    this.namespace.emit(PLACE_CARD_INTO_DECK, discarded);
+
+    this.drawCardForPlayer(player);
   }
 
   /**
@@ -148,8 +166,8 @@ export default class GameState {
     }
 
     this.players.forEach((player) => {
-      player.addCard(this.deck.draw());
-      player.addCard(this.deck.draw());
+      this.drawCardForPlayer(player);
+      this.drawCardForPlayer(player);
     });
 
     this.broadcastState();

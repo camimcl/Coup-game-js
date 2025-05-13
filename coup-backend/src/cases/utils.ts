@@ -40,8 +40,6 @@ type TEmitPrompt = {
   message: string;
   /** Optional choices for the player. */
   options: PromptOption[];
-  /** TODO: Implement multicast via explicit target sockets. */
-  targets?: Socket[];
   /** Optional timeout (ms) after which a default action may be taken. */
   timeout?: number;
   /** Variant guiding how the client should render/interpret the prompt. */
@@ -156,7 +154,7 @@ export default async function askPlayerToChooseCard(
       console.debug('Prompt to choose card has timed out');
 
       resolve(options[0].value);
-    }, 5000);
+    }, 15000);
 
     player.socket.on(PROMPT_RESPONSE, (response) => {
       clearTimeout(timeoutId);

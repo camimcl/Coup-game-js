@@ -65,10 +65,7 @@ export default function initializeNamespace(
     });
 
     const response = await new Promise<string>((resolve) => {
-      const timeout = setTimeout(() => resolve(availableOptions[0].value.toString()), 5000);
-
       player.socket.once(PROMPT_RESPONSE, (res: string) => {
-        clearTimeout(timeout);
         resolve(res);
       });
     });

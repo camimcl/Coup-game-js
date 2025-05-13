@@ -169,15 +169,27 @@ export default class AssassinCase extends BaseCase {
 
     if (revealed.variant === CARD_VARIANT_CONDESSA) {
       console.log('The card is Consessa');
+
       // Challenge failed: challenger loses both cards
-      // TODO: ask challenger (currentPlayer) to discard one and discard it
       const chosenCardUuid = await askPlayerToChooseCard(namespace, this.currentPlayer);
 
       this.gameState.discardPlayerCard(chosenCardUuid, this.currentPlayer);
+
+      this.gameState.placeCardIntoDeckAndReceiveAnother(revealedUuid, this.targetPlayer);
     } else {
+      console.log('The card is not Consessa');
+
       // Block failed: target loses both cards
-      // TODO: ask target to discard two cards, one at a time
+      this.discardAllTargetPlayerCards();
     }
+  }
+
+  private discardAllTargetPlayerCards() {
+    const cards = this.targetPlayer.getCardsClone();
+
+    cards.forEach((card) => {
+      this.gameState.discardPlayerCard(card.uuid, this.targetPlayer);
+    });
   }
 
   /**
@@ -193,11 +205,9 @@ export default class AssassinCase extends BaseCase {
 
     if (revealed.variant === CARD_VARIANT_ASSASSIN) {
       // Challenge failed: challenger loses one card and current player exchanges Assassin
-      const chosenCardUuid = await askPlayerToChooseCard(namespace, this.targetPlayer);
+      this.discardAllTargetPlayerCards();
 
-      this.gameState.discardPlayerCard(chosenCardUuid, this.targetPlayer);
-
-      // TODO: Add card from deck to current player
+      this.gameState.placeCardIntoDeckAndReceiveAnother(revealUuid, this.currentPlayer);
     } else {
       this.gameState.discardPlayerCard(revealUuid, this.currentPlayer);
     }

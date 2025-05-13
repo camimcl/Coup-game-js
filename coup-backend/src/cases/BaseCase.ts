@@ -73,7 +73,7 @@ export default abstract class BaseCase {
     });
 
     return new Promise((resolve) => {
-      const timeout = setTimeout(() => resolve(defaultOption.value.toString()), 5000);
+      const timeout = setTimeout(() => resolve(defaultOption.value.toString()), 15000);
 
       targetSocket.once(PROMPT_RESPONSE, (res: string) => {
         clearTimeout(timeout);
@@ -82,7 +82,7 @@ export default abstract class BaseCase {
     });
   }
 
-  protected async emitChallengeToOtherPlayers(message: string, timeout: number = 5000) {
+  protected async emitChallengeToOtherPlayers(message: string, timeout: number = 15000) {
     emitPromptToOtherPlayers({
       namespace: this.gameState.getNamespace(),
       socket: this.currentPlayer.socket,

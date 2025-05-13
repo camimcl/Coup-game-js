@@ -55,8 +55,6 @@ export default class DukeCase extends BaseCase {
 
       this.gameState.discardPlayerCard(currentPlayerChosenCardUUID, this.currentPlayer);
 
-      // TODO: emit event to the current player saying that the card was discarded
-
       return;
     }
 
@@ -67,8 +65,6 @@ export default class DukeCase extends BaseCase {
     console.debug('Discarding the chosen card.');
 
     this.gameState.discardPlayerCard(challengerChosenCardUUID, this.challengerPlayer);
-
-    // TODO: emit event to the challenger player saying that the card was discarded
 
     console.debug(`${this.currentPlayer.name} receives a new card and discard the Duke card`);
 

@@ -1,8 +1,6 @@
 import { Socket } from 'socket.io';
 import Card from './Card.ts';
-import {
-  CARD_VARIANT_DUKE,
-} from '../../constants/cardVariants.ts';
+import { CARD_DISCARDED } from '../../constants/events.ts';
 
 /**
  * Represents a player in the game, holding cards, coins, and a socket connection.
@@ -35,7 +33,7 @@ export default class Player {
     this.socket = socket;
 
     // Start with one Duke card and 2 coins
-    this.cards = [new Card(CARD_VARIANT_DUKE)];
+    this.cards = [];
     this.coins = 2;
   }
 
@@ -54,6 +52,9 @@ export default class Player {
     }
 
     const [removed] = this.cards.splice(index, 1);
+
+    // Tell the player a card was discarded
+    this.socket.emit(CARD_DISCARDED, removed);
 
     return removed;
   }
