@@ -3,15 +3,12 @@ import EventEmitter from 'events';
 import Card from './entities/Card.ts';
 import Player from './entities/Player.ts';
 import Deck from './entities/Deck.ts';
-import { NEXT_TURN } from '../constants/events.ts';
+import { GAME_END, GAME_STATE_UPDATE, NEXT_TURN } from '../constants/events.ts';
 
 /**
  * Manages the full state of a match:
  */
 export default class GameState {
-  /** Cards selected during prompts or actions. */
-  private chosenCards: Card[] = [];
-
   /** Index of the player whose turn it is. */
   private currentTurnPlayerIndex: number = 0;
 
@@ -33,7 +30,7 @@ export default class GameState {
   /** Socket.IO namespace for broadcasting game-state events. */
   private readonly namespace: Namespace;
 
-  readonly internalBus: EventEmitter;
+  private readonly internalBus: EventEmitter;
 
   /**
    * Initializes a new game state.
@@ -68,7 +65,9 @@ export default class GameState {
     this.broadcastState();
   }
 
-  //
+  public startGame() {
+    this.dealInitialHands();
+  }
 
   /**
    * Advances turn to the next active player (wraps around),
@@ -77,13 +76,23 @@ export default class GameState {
   public goToNextTurn(): void {
     if (this.players.length === 0) return;
 
+    if (this.players.length === 1) {
+      console.debug(`${this.players[0].name} won the match`);
+
+      // Warns internal listeners that the match is over
+      this.internalBus.emit(GAME_END);
+
+      // Warns clients that the match is over
+      this.namespace.emit(GAME_END);
+
+      return;
+    }
+
     this.currentTurnPlayerIndex = (this.currentTurnPlayerIndex + 1) % this.players.length;
 
     this.internalBus.emit(NEXT_TURN);
 
     this.broadcastState();
-
-    // Check if game is over
   }
 
   /**
@@ -176,7 +185,7 @@ export default class GameState {
    * You can adjust which parts you want clients to see.
    */
   public broadcastState(): void {
-    this.namespace.emit('GAME_STATE_UPDATE', {
+    this.namespace.emit(GAME_STATE_UPDATE, {
       uuid: this.uuid,
       players: this.players.map((p) => p.name),
       eliminated: this.eliminatedPlayers.map((p) => p.name),

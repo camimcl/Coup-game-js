@@ -27,4 +27,7 @@ export const LEAVE_MATCH = 'LEAVE_MATCH';
 
 export const NEXT_TURN = 'NEXT_TURN';
 export const GAME_START = 'GAME_START';
+export const GAME_END = 'GAME_END';
 export const MESSAGE = 'MESSAGE';
+
+export const GAME_STATE_UPDATE = 'GAME_STATE_UPDATE';

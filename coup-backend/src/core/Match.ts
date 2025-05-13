@@ -46,6 +46,8 @@ export default class Match {
     console.debug(`Starting match: ${this.uuid}`);
 
     this.internalBus.emit(GAME_START);
+
+    this.gameState.startGame();
   }
 
   /**
