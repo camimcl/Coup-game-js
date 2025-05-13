@@ -47,15 +47,6 @@ export default class GameState {
     this.deck = new Deck(players.length);
     this.uuid = '123';
     this.internalBus = internalBus;
-
-    this.initializeDeck();
-    this.dealInitialHands();
-    this.broadcastState();
-  }
-
-  private initializeDeck():void{
-    this.deck.initialize();
-    this.deck.shuffle();
   }
 
   /**
@@ -142,21 +133,16 @@ export default class GameState {
    */
   private dealInitialHands(handSize: number = 2): void {
     const totalCardsNeeded = this.players.length * handSize;
-    
-    if(this.deck.size() < totalCardsNeeded) {
-      throw new Error(`Not enough cards in the deck to deal initial hands.`);
-    }
-    for (const player of this.players){
-      const cards: Card [] = [];
 
-      for (let i = 0; i < handSize; i++){
-        const card = this.deck.draw();
-        if(!card){
-          throw new Error (`Error ao tentar distribuir carta ${i+ 1} para o jogador ${player.name}.`)
-        }
-        player.addCard(card);
-      }
+    if (this.deck.size() < totalCardsNeeded) {
+      throw new Error('Not enough cards in the deck to deal initial hands.');
     }
+
+    this.players.forEach((player) => {
+      player.addCard(this.deck.draw());
+      player.addCard(this.deck.draw());
+    });
+
     this.broadcastState();
   }
 

@@ -1,5 +1,20 @@
-import { CARD_VARIANT_AMBASSADOR, CARD_VARIANT_ASSASSIN, CARD_VARIANT_CAPTAIN, CARD_VARIANT_CONDESSA, CARD_VARIANT_DUKE, CardVariant } from '../../constants/cardVariants.ts';
+import {
+  CARD_VARIANT_AMBASSADOR,
+  CARD_VARIANT_ASSASSIN,
+  CARD_VARIANT_CAPTAIN,
+  CARD_VARIANT_CONDESSA,
+  CARD_VARIANT_DUKE,
+  CardVariant,
+} from '../../constants/cardVariants.ts';
 import Card from './Card.ts';
+
+const CARD_VARIANTS: CardVariant[] = [
+  CARD_VARIANT_AMBASSADOR,
+  CARD_VARIANT_ASSASSIN,
+  CARD_VARIANT_CAPTAIN,
+  CARD_VARIANT_DUKE,
+  CARD_VARIANT_CONDESSA,
+];
 
 /**
  * A standard deck of cards supporting shuffle, draw, and insertion operations.
@@ -7,38 +22,26 @@ import Card from './Card.ts';
 export default class Deck {
   /** Internal array storing the cards in the deck. */
   private cards: Card[] = [];
-  playersAmount: number;
 
   /**
    * Constructs a new deck.
    *
    * @param playersAmount - Number of players (use to determine initial card distribution).
-   *                         TODO: implement logic to populate `this.cards` based on this.
+   *
    */
   constructor(playersAmount: number) {
-    this.playersAmount = playersAmount;
-    this.initialize();
-  } 
+    const copiesPerVariant = playersAmount <= 5 ? 3 : 4;
 
-  //initializes the deck with the correct number of each card type
-  public initialize():void{
-    const variants : CardVariant[] = [
-      CARD_VARIANT_AMBASSADOR,
-      CARD_VARIANT_ASSASSIN,
-      CARD_VARIANT_CAPTAIN,
-      CARD_VARIANT_DUKE,
-      CARD_VARIANT_CONDESSA,
-    ];
-    const copiesPerVariant = this.playersAmount <= 5 ? 3 : 4;
     this.cards = [];
 
-    for(const variant of variants){
-      for(let i = 0; i < copiesPerVariant; i++){
-        this.cards.push(new Card(variant));
+    CARD_VARIANTS.forEach((cardVariant) => {
+      for (let i = 0; i < copiesPerVariant; i += 1) {
+        this.cards.push(new Card(cardVariant));
       }
-  }
+    });
+
     this.shuffle();
-}
+  }
 
   /**
    * Shuffles the deck in place using the Fisher–Yates algorithm.
@@ -47,7 +50,7 @@ export default class Deck {
     let currentIndex = this.cards.length;
     while (currentIndex !== 0) {
       const randomIndex = Math.floor(Math.random() * currentIndex);
-      currentIndex--;
+      currentIndex -= 1;
       [this.cards[currentIndex], this.cards[randomIndex]] = [
         this.cards[randomIndex],
         this.cards[currentIndex],
