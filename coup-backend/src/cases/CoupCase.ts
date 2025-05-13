@@ -2,6 +2,7 @@
 import BaseCase from './BaseCase.ts';
 import Player from '../core/entities/Player.ts';
 import GameState from '../core/GameState.ts';
+import { COUP_PERFORMED } from '../constants/events.ts';
 
 export default class CoupCase extends BaseCase {
   private targetPlayer!: Player;
@@ -29,6 +30,10 @@ export default class CoupCase extends BaseCase {
 
     // Gasta 7 moedas
     this.currentPlayer.removeCoins(7);
+
+    const namespace = this.gameState.getNamespace();
+
+    namespace.emit(COUP_PERFORMED, { originPlayerUUID: this.currentPlayer.uuid });
 
     // Alvo escolhe carta para perder
     const chosenCardUUID = await this.promptService.askSingleCard(this.targetPlayer);

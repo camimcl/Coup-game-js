@@ -90,16 +90,6 @@ export default class Deck {
   }
 
   /**
-   * Adds multiple cards into the deck and then shuffles.
-   *
-   * @param newCards - Array of Cards to insert.
-   */
-  public placeCardIntoDeckAndShuffle(newCards: Card[]): void {
-    this.cards = this.cards.concat(newCards);
-    this.shuffle();
-  }
-
-  /**
    * @returns The current number of cards remaining in the deck.
    */
   public size(): number {

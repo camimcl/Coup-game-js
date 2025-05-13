@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import AmbassadorCase from './cases/AmbassadorCase.ts';
 import AssassinCase from './cases/AssassinCase.ts';
 import CoupCase from './cases/CoupCase.ts';
@@ -8,10 +9,10 @@ import IncomeCase from './cases/IncomeCase.ts';
 import Player from './core/entities/Player.ts';
 import Match from './core/Match.ts';
 import {
-  GAME_START, MESSAGE, NEXT_TURN, PROMPT_RESPONSE,
+  GAME_START, MESSAGE, TURN_START, PROMPT_RESPONSE,
 } from './constants/events.ts';
 import BaseCase from './cases/BaseCase.ts';
-import { PromptService } from './cases/PromptService.ts';
+import { PromptOption, PromptService } from './cases/PromptService.ts';
 
 export default function initializeNamespace(
   match: Match,
@@ -52,7 +53,7 @@ export default function initializeNamespace(
     });
   });
 
-  async function startTurn() {
+  async function handleTurn() {
     const availableOptions: PromptOption[] = Object.values(cases)
       .filter((c) => c.canExecute())
       .map((c) => ({ label: c.getCaseName(), value: c.getCaseName() }));
@@ -74,21 +75,21 @@ export default function initializeNamespace(
     const chosenCase = cases[response];
 
     if (!chosenCase || !chosenCase.canExecute()) {
-      player.socket.emit(MESSAGE, { message: 'Cannot execute the given actions' });
+      player.socket.emit(MESSAGE, { message: 'Cannot execute the given action' });
     } else {
       chosenCase.runCase();
     }
   }
 
-  match.internalBus.on(NEXT_TURN, () => {
+  match.internalBus.on(TURN_START, () => {
     console.debug('Starting next turn');
 
-    startTurn();
+    handleTurn();
   });
 
   match.internalBus.on(GAME_START, () => {
     console.debug('Starting game');
 
-    startTurn();
+    handleTurn();
   });
 }

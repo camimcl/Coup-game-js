@@ -143,17 +143,12 @@ export const MESSAGE = 'MESSAGE';
 /**
  * Used to warn that the next turn is starting.
  */
-export const NEXT_TURN = 'NEXT_TURN';
+export const TURN_START = 'TURN_START';
 
 /**
  * Used when a card is placed back into the deck.
  */
 export const PLACE_CARD_INTO_DECK = 'PLACE_CARD_INTO_DECK';
-
-/**
- * Used to let everyone know that a player has lost a card.
- */
-export const OWNED_CARD_DISCARDED = 'OWNED_CARD_DISCARDED';
 
 /**
  * Used to let everyone know that a player's count changed.

@@ -1,4 +1,4 @@
-import { NEXT_TURN } from '../constants/events.ts';
+import { TURN_START } from '../constants/events.ts';
 import Player from '../core/entities/Player.ts';
 import GameState from '../core/GameState.ts';
 import { PromptService } from './PromptService.ts';
@@ -39,6 +39,6 @@ export default abstract class BaseCase {
 
     const namespace = this.gameState.getNamespace();
 
-    namespace.emit(NEXT_TURN);
+    namespace.emit(TURN_START);
   }
 }

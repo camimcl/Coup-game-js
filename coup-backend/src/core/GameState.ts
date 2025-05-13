@@ -4,8 +4,10 @@ import Card from './entities/Card.ts';
 import Player from './entities/Player.ts';
 import Deck from './entities/Deck.ts';
 import {
+  CARD_DISCARDED,
   CARD_DRAW,
-  GAME_END, GAME_STATE_UPDATE, NEXT_TURN, OWNED_CARD_DISCARDED, PLACE_CARD_INTO_DECK, PLAYER_DEATH,
+  GAME_END, GAME_STATE_UPDATE, TURN_START, PLACE_CARD_INTO_DECK, PLAYER_DEATH,
+  PLAYER_ELIMINATED,
 } from '../constants/events.ts';
 
 /**
@@ -61,7 +63,7 @@ export default class GameState {
 
     this.knownCards.push(discarded);
 
-    player.socket.emit(OWNED_CARD_DISCARDED, discarded);
+    player.socket.emit(CARD_DISCARDED, discarded);
 
     if (player.getCardsClone().length === 0) {
       this.eliminatePlayer(player.uuid);
@@ -98,7 +100,7 @@ export default class GameState {
 
     this.currentTurnPlayerIndex = (this.currentTurnPlayerIndex + 1) % this.players.length;
 
-    this.internalBus.emit(NEXT_TURN);
+    this.internalBus.emit(TURN_START);
 
     this.broadcastState();
   }
@@ -116,8 +118,10 @@ export default class GameState {
     if (card) {
       player.addCard(card);
 
-      // Tell player they received a card
-      player.socket.emit(CARD_DRAW, card);
+      this.namespace.emit(
+        CARD_DRAW,
+        { cardUUID: card.uuid, targetPlayerUUID: player.uuid },
+      );
 
       this.broadcastState();
 
@@ -132,8 +136,11 @@ export default class GameState {
 
     this.deck.pushAndShuffle(discarded);
 
-    // Warns everyone that a card was place into the deck
-    this.namespace.emit(PLACE_CARD_INTO_DECK, discarded);
+    // Warns everyone that a card was placed into the deck
+    this.namespace.emit(
+      PLACE_CARD_INTO_DECK,
+      { cardUUID: discarded.uuid, originPlayerUUID: player.uuid },
+    );
 
     this.drawCardForPlayer(player);
   }
@@ -150,6 +157,13 @@ export default class GameState {
 
     this.eliminatedPlayers.push(player);
     this.players = this.players.filter((p) => p.uuid !== uuid);
+
+    // Warns everyone that this player has been eliminated
+    // TODO: send who killed that player?
+    this.namespace.emit(
+      PLAYER_ELIMINATED,
+      { playerUUID: uuid },
+    );
   }
 
   /**
@@ -205,8 +219,8 @@ export default class GameState {
   public broadcastState(): void {
     this.namespace.emit(GAME_STATE_UPDATE, {
       uuid: this.uuid,
-      players: this.players.map((p) => p.name),
-      eliminated: this.eliminatedPlayers.map((p) => p.name),
+      players: this.players.map((p) => p.uuid),
+      eliminated: this.eliminatedPlayers.map((p) => p.uuid),
       currentTurnPlayer: this.getCurrentTurnPlayer()?.uuid,
       deckSize: this.deck.size(),
     });
