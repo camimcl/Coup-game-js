@@ -1,4 +1,4 @@
-import askPlayerToChooseCard from './utils.ts';
+/* eslint-disable no-console */
 import BaseCase from './BaseCase.ts';
 import Player from '../core/entities/Player.ts';
 import GameState from '../core/GameState.ts';
@@ -24,8 +24,6 @@ export default class CoupCase extends BaseCase {
       throw new Error(`${this.currentPlayer.name} não tem moedas suficientes para dar o golpe.`);
     }
 
-    const namespace = this.gameState.getNamespace();
-
     // Pede para o jogador escolher quem será o alvo
     await this.promptChooseTarget();
 
@@ -33,7 +31,7 @@ export default class CoupCase extends BaseCase {
     this.currentPlayer.removeCoins(7);
 
     // Alvo escolhe carta para perder
-    const chosenCardUUID = await askPlayerToChooseCard(namespace, this.targetPlayer);
+    const chosenCardUUID = await this.promptService.askSingleCard(this.targetPlayer);
 
     // Descarte visível
     this.gameState.discardPlayerCard(chosenCardUUID, this.targetPlayer);
@@ -49,12 +47,12 @@ export default class CoupCase extends BaseCase {
       .filter((p) => p.uuid !== this.currentPlayer.uuid)
       .map((p) => ({ label: p.name, value: p.uuid }));
 
-    const chosenUuid: string = await this.emitPromptToPlayer({
-      defaultOption: options[0],
-      message: 'Escolha um jogador para dar o golpe de Estado',
-      targetSocket: this.currentPlayer.socket,
+    const chosenUuid: string = await this.promptService.prompt(
+      this.currentPlayer.socket,
+      'Escolha um jogador para dar o golpe de Estado',
       options,
-    });
+      options[0].value,
+    );
 
     console.log(`Chosen target: ${chosenUuid}`);
 

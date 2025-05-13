@@ -45,9 +45,9 @@ export default class Match {
   }
 
   public startMatch() {
-    console.debug(`Starting match: ${this.uuid}`);
-
     if (this.inProgress) return;
+
+    console.debug(`Starting match: ${this.uuid}`);
 
     this.internalBus.emit(GAME_START);
 

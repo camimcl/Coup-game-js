@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import GameState from '../core/GameState.ts';
 import BaseCase from './BaseCase.ts';
 

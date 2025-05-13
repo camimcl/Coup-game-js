@@ -4,19 +4,18 @@ import { PROMPT_OPTION_CHALLENGE_ACCEPT, PROMPT_OPTION_CHALLENGE_PASS } from '..
 import Player from '../core/entities/Player.ts';
 import GameState from '../core/GameState.ts';
 import BaseCase from './BaseCase.ts';
-import askPlayerToChooseCard from './utils.ts';
 
 const DEFENSE_RESPONSE_ACCEPT = 'ACCEPT';
 const DEFENSE_RESPONSE_BLOCK_AS_CAPTAIN = 'BLOCK_AS_CAPTAIN';
 const DEFENSE_RESPONSE_BLOCK_AS_EMBASSADOR = 'BLOCK_AS_EMBASSADOR';
 
-type DEFENDE_RESPONSE = typeof PROMPT_OPTION_CHALLENGE_ACCEPT
+type DEFENSE_RESPONSE = typeof PROMPT_OPTION_CHALLENGE_ACCEPT
   | typeof DEFENSE_RESPONSE_ACCEPT
   | typeof DEFENSE_RESPONSE_BLOCK_AS_CAPTAIN
   | typeof DEFENSE_RESPONSE_BLOCK_AS_EMBASSADOR;
 
 export default class CaptainCase extends BaseCase {
-  /** The player being targeted for assassination. */
+  /** The player being targeted to be robbed. */
   private targetPlayer!: Player;
 
   constructor(gameState: GameState) {
@@ -61,23 +60,21 @@ export default class CaptainCase extends BaseCase {
   ) {
     const influenceLabel = chosenInfluence === CARD_VARIANT_CAPTAIN ? 'Capitão' : 'Embaixador';
 
-    const currentPlayerResponse = await this.emitChallengeToPlayer(
-      `${this.targetPlayer.name} diz ser o ${influenceLabel}. Deseja contestar?`,
+    const currentPlayerResponse = await this.promptService.challengePlayer(
       this.currentPlayer.socket,
+      `${this.targetPlayer.name} diz ser o ${influenceLabel}. Deseja contestar?`,
     );
 
     if (currentPlayerResponse === PROMPT_OPTION_CHALLENGE_PASS) {
       return;
     }
 
-    const namespace = this.gameState.getNamespace();
-
-    const revealedCardUUID = await askPlayerToChooseCard(namespace, this.targetPlayer);
+    const revealedCardUUID = await this.promptService.askSingleCard(this.targetPlayer);
 
     const card = this.targetPlayer.getCardByUUID(revealedCardUUID);
 
     if (card.variant === chosenInfluence) {
-      const cardUUID = await askPlayerToChooseCard(namespace, this.currentPlayer);
+      const cardUUID = await this.promptService.askSingleCard(this.currentPlayer);
 
       this.gameState.discardPlayerCard(cardUUID, this.currentPlayer);
 
@@ -88,9 +85,7 @@ export default class CaptainCase extends BaseCase {
   }
 
   async handleClaimChallenge() {
-    const namespace = this.gameState.getNamespace();
-
-    const chosenCardUUID = await askPlayerToChooseCard(namespace, this.currentPlayer);
+    const chosenCardUUID = await this.promptService.askSingleCard(this.currentPlayer);
 
     const chosenCard = this.currentPlayer.getCardByUUID(chosenCardUUID);
 
@@ -106,9 +101,7 @@ export default class CaptainCase extends BaseCase {
   }
 
   async handleTargetPlayerChallengeLoss() {
-    const namespace = this.gameState.getNamespace();
-
-    const chosenCardUUID = await askPlayerToChooseCard(namespace, this.targetPlayer);
+    const chosenCardUUID = await this.promptService.askSingleCard(this.targetPlayer);
 
     this.gameState.discardPlayerCard(chosenCardUUID, this.targetPlayer);
   }
@@ -126,12 +119,12 @@ export default class CaptainCase extends BaseCase {
       throw new Error('No player has two coins');
     }
 
-    const chosenUuid: string = await this.emitPromptToPlayer({
-      defaultOption: options[0],
-      message: 'Escolha um jogador para roubar',
-      targetSocket: this.currentPlayer.socket,
+    const chosenUuid: string = await this.promptService.prompt(
+      this.currentPlayer.socket,
+      'Escolha um jogador para roubar',
       options,
-    });
+      options[0].value,
+    );
 
     const target = this.gameState.getPlayerByUUID(chosenUuid);
 
@@ -147,7 +140,7 @@ export default class CaptainCase extends BaseCase {
   * or contest the current player.
   * Returns 'ACCEPT' if they accept, or 'BLOCK' if they claim Condessa.
   */
-  private async promptTargetDefense(): Promise<DEFENDE_RESPONSE> {
+  private async promptTargetDefense(): Promise<DEFENSE_RESPONSE> {
     const options = [
       { label: 'Aceitar roubo', value: DEFENSE_RESPONSE_ACCEPT },
       { label: 'Desafiar', value: PROMPT_OPTION_CHALLENGE_ACCEPT },
@@ -155,11 +148,11 @@ export default class CaptainCase extends BaseCase {
       { label: 'Defender-se como Embassador', value: DEFENSE_RESPONSE_BLOCK_AS_EMBASSADOR },
     ];
 
-    return await this.emitPromptToPlayer({
-      defaultOption: options[0],
-      message: `${this.currentPlayer.name} está tentando te roubar. O que você deseja fazer?`,
+    return await this.promptService.prompt(
+      this.targetPlayer.socket,
+      `${this.currentPlayer.name} está tentando te roubar. O que você deseja fazer?`,
       options,
-      targetSocket: this.targetPlayer.socket,
-    }) as DEFENDE_RESPONSE;
+      options[0].value,
+    ) as DEFENSE_RESPONSE;
   }
 }

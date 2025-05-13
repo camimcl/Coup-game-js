@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
 import BaseCase from './BaseCase.ts';
-import askPlayerToChooseCard from './utils.ts';
 import Player from '../core/entities/Player.ts';
 import { CARD_VARIANT_ASSASSIN, CARD_VARIANT_CONDESSA } from '../constants/cardVariants.ts';
 import { PROMPT_OPTION_CHALLENGE_ACCEPT, PROMPT_OPTION_CHALLENGE_PASS } from '../constants/promptOptions.ts';
@@ -79,12 +78,12 @@ export default class AssassinCase extends BaseCase {
       .filter((p) => p.uuid !== this.currentPlayer.uuid)
       .map((p) => ({ label: p.name, value: p.uuid }));
 
-    const chosenUuid: string = await this.emitPromptToPlayer({
-      defaultOption: options[0],
-      message: 'Escolha um jogador para assassinar',
-      targetSocket: this.currentPlayer.socket,
+    const chosenUuid: string = await this.promptService.prompt(
+      this.currentPlayer.socket,
+      'Escolha um jogador para assassinar',
       options,
-    });
+      options[0].value,
+    );
 
     console.log(`Chosen target: ${chosenUuid}`);
 
@@ -104,21 +103,19 @@ export default class AssassinCase extends BaseCase {
       { label: 'Dizer que é a Condessa', value: 'BLOCK' },
     ];
 
-    return this.emitPromptToPlayer({
-      defaultOption: options[0],
-      message: `${this.currentPlayer.name} está tentando te assassinar. O que você deseja fazer?`,
+    return this.promptService.prompt(
+      this.currentPlayer.socket,
+      `${this.currentPlayer.name} está tentando te assassinar. O que você deseja fazer?`,
       options,
-      targetSocket: this.targetPlayer.socket,
-    });
+      options[0].value,
+    );
   }
 
   /**
    * Applies the assassination effect: target chooses a card to discard.
    */
   private async applyAssassination(): Promise<void> {
-    const namespace = this.gameState.getNamespace();
-
-    const uuid = await askPlayerToChooseCard(namespace, this.targetPlayer);
+    const uuid = await this.promptService.askSingleCard(this.targetPlayer);
 
     console.log(`Discarding card ${uuid} from player ${this.targetPlayer.name}`);
 
@@ -140,12 +137,12 @@ export default class AssassinCase extends BaseCase {
       },
     ];
 
-    const response = await this.emitPromptToPlayer({
-      defaultOption: options[0],
-      message: `${this.targetPlayer.name} diz ser a Condessa e bloqueia o assassinato. O que deseja fazer`,
-      targetSocket: this.currentPlayer.socket,
+    const response = await this.promptService.prompt(
+      this.currentPlayer.socket,
+      `${this.targetPlayer.name} diz ser a Condessa e bloqueia o assassinato. O que deseja fazer`,
       options,
-    });
+      options[0].value,
+    );
 
     if (response === PROMPT_OPTION_CHALLENGE_ACCEPT) {
       console.log('Challenge accepted');
@@ -160,10 +157,8 @@ export default class AssassinCase extends BaseCase {
    * Resolves a challenge against the Condessa block claim.
    */
   private async handleBlockChallenge(): Promise<void> {
-    const namespace = this.gameState.getNamespace();
-
     // Target reveals a card
-    const revealedUuid = await askPlayerToChooseCard(namespace, this.targetPlayer);
+    const revealedUuid = await this.promptService.askSingleCard(this.targetPlayer);
 
     const revealed = this.targetPlayer.getCardByUUID(revealedUuid);
 
@@ -171,7 +166,7 @@ export default class AssassinCase extends BaseCase {
       console.log('The card is Consessa');
 
       // Challenge failed: challenger loses both cards
-      const chosenCardUuid = await askPlayerToChooseCard(namespace, this.currentPlayer);
+      const chosenCardUuid = await this.promptService.askSingleCard(this.currentPlayer);
 
       this.gameState.discardPlayerCard(chosenCardUuid, this.currentPlayer);
 
@@ -197,13 +192,12 @@ export default class AssassinCase extends BaseCase {
    * @param challengerId UUID of the challenger.
    */
   private async handleClaimChallenge(): Promise<void> {
-    const namespace = this.gameState.getNamespace();
-
     // Current player reveals a card
-    const revealUuid = await askPlayerToChooseCard(namespace, this.currentPlayer);
-    const revealed = this.currentPlayer.getCardByUUID(revealUuid);
+    const revealUuid = await this.promptService.askSingleCard(this.currentPlayer);
 
-    if (revealed.variant === CARD_VARIANT_ASSASSIN) {
+    const revealedCard = this.currentPlayer.getCardByUUID(revealUuid);
+
+    if (revealedCard.variant === CARD_VARIANT_ASSASSIN) {
       // Challenge failed: challenger loses one card and current player exchanges Assassin
       this.discardAllTargetPlayerCards();
 

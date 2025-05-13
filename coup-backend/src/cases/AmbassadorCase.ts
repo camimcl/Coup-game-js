@@ -1,7 +1,6 @@
 import BaseCase from './BaseCase.ts';
 import { PROMPT_OPTION_CHALLENGE_ACCEPT } from '../constants/promptOptions.ts';
 import { CARD_VARIANT_AMBASSADOR } from '../constants/cardVariants.ts';
-import askPlayerToChooseCard, { askPlayerToChooseTwoCards } from './utils.ts';
 import GameState from '../core/GameState.ts';
 
 export default class AmbassadorCase extends BaseCase {
@@ -15,7 +14,11 @@ export default class AmbassadorCase extends BaseCase {
     const {
       challengerId,
       response,
-    } = await this.emitChallengeToOtherPlayers(`${this.currentPlayer.name} diz ser o embaixador e deseja trocar de cartas`);
+    } = await this.promptService.challengeOthers(
+      this.currentPlayer.socket,
+      this.gameState.getActivePlayers().length,
+      `${this.currentPlayer.name} diz ser o embaixador e deseja trocar de cartas`,
+    );
 
     if (response === PROMPT_OPTION_CHALLENGE_ACCEPT) {
       await this.handleChallenge(challengerId);
@@ -27,10 +30,11 @@ export default class AmbassadorCase extends BaseCase {
   }
 
   private async handleChallenge(challengerId: string) {
-    const namespace = this.gameState.getNamespace();
     const challenger = this.gameState.getPlayerByUUID(challengerId);
 
-    const revealedUUID = await askPlayerToChooseCard(namespace, this.currentPlayer);
+    const revealedUUID = await this.promptService.askSingleCard(
+      this.currentPlayer,
+    );
 
     const revealedCard = this.currentPlayer.getCardByUUID(revealedUUID);
 
@@ -42,7 +46,7 @@ export default class AmbassadorCase extends BaseCase {
     }
 
     // If the revealed card is the ambassador, the challenger must discard a card
-    const challengerCardUUID = await askPlayerToChooseCard(namespace, challenger);
+    const challengerCardUUID = await this.promptService.askSingleCard(challenger);
 
     this.gameState.discardPlayerCard(challengerCardUUID, challenger);
 
@@ -53,8 +57,6 @@ export default class AmbassadorCase extends BaseCase {
   }
 
   private async performExchange() {
-    const namespace = this.gameState.getNamespace();
-
     // draw two cards from the deck
     const drawn1 = this.gameState.getDeck().draw();
     const drawn2 = this.gameState.getDeck().draw();
@@ -67,7 +69,7 @@ export default class AmbassadorCase extends BaseCase {
     const totalCards = this.currentPlayer.getCardsClone();
 
     // keep the choosen cards
-    const keptCardsUUIDs = await askPlayerToChooseTwoCards(namespace, this.currentPlayer);
+    const keptCardsUUIDs = await this.promptService.askTwoCards(this.currentPlayer);
 
     // remove the cards that were not kept
     totalCards.forEach((card) => {

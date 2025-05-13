@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
 import { PROMPT_OPTION_CHALLENGE_ACCEPT } from '../constants/promptOptions.ts';
-import askPlayerToChooseCard from './utils.ts';
 import { CARD_VARIANT_DUKE } from '../constants/cardVariants.ts';
 import Player from '../core/entities/Player.ts';
 import BaseCase from './BaseCase.ts';
@@ -19,7 +18,11 @@ export default class DukeCase extends BaseCase {
     const {
       challengerId,
       response: challengeResolution,
-    } = await this.emitChallengeToOtherPlayers(`${this.currentPlayer.name} diz ser o Duque e requisita três moedas.`);
+    } = await this.promptService.challengeOthers(
+      this.currentPlayer.socket,
+      this.gameState.getActivePlayers().length,
+      `${this.currentPlayer.name} diz ser o Duque e requisita três moedas.`,
+    );
 
     if (challengeResolution === PROMPT_OPTION_CHALLENGE_ACCEPT) {
       await this.handleChallenge(challengerId);
@@ -34,8 +37,6 @@ export default class DukeCase extends BaseCase {
   }
 
   private async handleChallenge(challengerId: string) {
-    const namespace = this.gameState.getNamespace();
-
     this.challengerPlayer = this.gameState.getPlayerByUUID(challengerId);
 
     if (!this.challengerPlayer) {
@@ -46,7 +47,7 @@ export default class DukeCase extends BaseCase {
 
     console.debug(`${this.currentPlayer.name} must choose a card`);
 
-    const currentPlayerChosenCardUUID = await askPlayerToChooseCard(namespace, this.currentPlayer);
+    const currentPlayerChosenCardUUID = await this.promptService.askSingleCard(this.currentPlayer);
 
     const chosenCard = this.currentPlayer.getCardByUUID(currentPlayerChosenCardUUID);
 
@@ -60,7 +61,7 @@ export default class DukeCase extends BaseCase {
 
     console.debug(`The chosen card is Duke. The challenger player ${this.challengerPlayer.name} must choose a card to discard.`);
 
-    const challengerChosenCardUUID = await askPlayerToChooseCard(namespace, this.challengerPlayer);
+    const challengerChosenCardUUID = await this.promptService.askSingleCard(this.challengerPlayer);
 
     console.debug('Discarding the chosen card.');
 

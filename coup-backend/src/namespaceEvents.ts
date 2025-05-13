@@ -1,4 +1,3 @@
-import { EventEmitter } from 'events';
 import AmbassadorCase from './cases/AmbassadorCase.ts';
 import AssassinCase from './cases/AssassinCase.ts';
 import CoupCase from './cases/CoupCase.ts';
@@ -11,14 +10,15 @@ import Match from './core/Match.ts';
 import {
   GAME_START, MESSAGE, NEXT_TURN, PROMPT_RESPONSE,
 } from './constants/events.ts';
-import { emitPromptToPlayer, PromptOption } from './cases/utils.ts';
 import BaseCase from './cases/BaseCase.ts';
+import { PromptService } from './cases/PromptService.ts';
 
 export default function initializeNamespace(
   match: Match,
 ) {
   const namespace = match.getNamespace();
   const gameState = match.getGameState();
+  const promptService = new PromptService(namespace);
 
   const assassinCase = new AssassinCase(gameState);
   const dukeCase = new DukeCase(gameState);
@@ -59,12 +59,11 @@ export default function initializeNamespace(
 
     const player = match.getGameState().getCurrentTurnPlayer();
 
-    emitPromptToPlayer({
-      message: 'O que deseja fazer',
-      namespace,
-      options: availableOptions,
-      socket: player.socket,
-    });
+    promptService.emitToPlayer(
+      player.socket,
+      'O que deseja fazer',
+      availableOptions,
+    );
 
     const response = await new Promise<string>((resolve) => {
       player.socket.once(PROMPT_RESPONSE, (res: string) => {

@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
 import { PROMPT_OPTION_CHALLENGE_ACCEPT } from '../constants/promptOptions.ts';
-import askPlayerToChooseCard from './utils.ts';
 import { CARD_VARIANT_DUKE } from '../constants/cardVariants.ts';
 import BaseCase from './BaseCase.ts';
 import Player from '../core/entities/Player.ts';
@@ -19,7 +18,11 @@ export default class ForeignAidCase extends BaseCase {
     const {
       challengerId,
       response: challengeToAid,
-    } = await this.emitChallengeToOtherPlayers(`${this.currentPlayer.name} requisita auxílio externo (2 moedas). Alguém se declara Duque para bloquear?`);
+    } = await this.promptService.challengeOthers(
+      this.currentPlayer.socket,
+      this.gameState.getActivePlayers().length,
+      `${this.currentPlayer.name} requisita auxílio externo (2 moedas). Alguém se declara Duque para bloquear?`,
+    );
 
     if (challengeToAid === PROMPT_OPTION_CHALLENGE_ACCEPT) {
       // Alguém se declarou Duque e bloqueou. Agora, o jogador atual pode contestar esse Duque.
@@ -39,7 +42,7 @@ export default class ForeignAidCase extends BaseCase {
 
     const message = `${this.challengerPlayer!.name} bloqueou o auxílio externo dizendo ser Duque. Deseja contestar?`;
 
-    const response = await this.emitChallengeToPlayer(message, this.currentPlayer.socket);
+    const response = await this.promptService.challengePlayer(this.currentPlayer.socket, message);
 
     if (response === PROMPT_OPTION_CHALLENGE_ACCEPT) {
       await this.resolveChallengeToDuke();
@@ -55,7 +58,7 @@ export default class ForeignAidCase extends BaseCase {
     console.debug(`${this.currentPlayer.name} contestou o Duque de ${this.challengerPlayer.name}`);
 
     // Duque revela carta
-    const dukeCardUUID = await askPlayerToChooseCard(namespace, this.challengerPlayer!);
+    const dukeCardUUID = await this.promptService.askSingleCard(this.challengerPlayer!);
     const revealedCard = this.challengerPlayer!.getCardByUUID(dukeCardUUID);
 
     if (revealedCard.variant !== CARD_VARIANT_DUKE) {
@@ -68,7 +71,7 @@ export default class ForeignAidCase extends BaseCase {
       console.debug(`Contestação bem-sucedida! ${this.currentPlayer.name} recebe 2 moedas.`);
     } else {
       // Duque era verdadeiro — contra-contestador perde carta
-      const cardUUID = await askPlayerToChooseCard(namespace, this.currentPlayer);
+      const cardUUID = await this.promptService.askSingleCard(this.currentPlayer);
 
       this.gameState.discardPlayerCard(cardUUID, this.currentPlayer);
 
