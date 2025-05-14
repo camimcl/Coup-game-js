@@ -12,9 +12,11 @@ import { useSocketContext } from '../../contexts/SocketProvider.tsx';
 
 export default function MatchSetup() {
   const [matchId, setMatchId] = useState<string>('');
+  const [playerName, setPlayerName] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [isHost, setIsHost] = useState<boolean>(false);
   const [playerCount, setPlayerCount] = useState<number>(0);
+  const [playerNames, setPlayerNames] = useState<string[]>([]);
 
   const { socket, connectedNs, connectToNamespace } = useSocketContext();
 
@@ -34,10 +36,14 @@ export default function MatchSetup() {
    */
   const handleCreate = async () => {
     setError(null);
+    if (!playerName.trim()) {
+      setError('Please enter your name.');
+      return;
+    }
     try {
       const id = await createMatch();
       setMatchId(id);
-      connectToNamespace(id);
+      connectToNamespace(id)
       setIsHost(true);
     } catch (e: any) {
       setError(e.message);
@@ -52,6 +58,10 @@ export default function MatchSetup() {
     const trimmed = matchId.trim();
     if (!trimmed) {
       setError('Please enter a valid match ID.');
+      return;
+    }
+    if (!playerName.trim()) {
+      setError('Please enter your name.');
       return;
     }
     connectToNamespace(trimmed);
@@ -79,9 +89,15 @@ export default function MatchSetup() {
       setPlayerCount(count);
     };
 
+    const handlePlayerNames = (names: string[]) => {
+      setPlayerNames(names);
+    };
+
     socket.on('PLAYER_COUNT_UPDATE', handleCount);
+    socket.on('PLAYER_NAMES_UPDATE', handlePlayerNames);
     return () => {
       socket.off('PLAYER_COUNT_UPDATE', handleCount);
+      socket.off('PLAYER_NAMES_UPDATE', handlePlayerNames);
     };
   }, [socket, connectedNs]);
 
@@ -92,6 +108,12 @@ export default function MatchSetup() {
         <>
           <h2>Join or Create a Match</h2>
           <div className="controls">
+            <input
+              type="text"
+              value={playerName}
+              placeholder="Enter your name"
+              onChange={e => setPlayerName(e.target.value)}
+            />
             <button onClick={handleCreate}>Create Match</button>
             <span className="or-label">— or —</span>
             <input
@@ -114,6 +136,14 @@ export default function MatchSetup() {
           </div>
           <div className="player-count">
             Players connected: <strong>{playerCount}</strong>
+          </div>
+          <div className="player-names">
+            <h3>Players:</h3>
+            <ul>
+              {playerNames.map((name, idx) => (
+                <li key={idx}>{name}</li>
+              ))}
+            </ul>
           </div>
 
           {isHost ? (
