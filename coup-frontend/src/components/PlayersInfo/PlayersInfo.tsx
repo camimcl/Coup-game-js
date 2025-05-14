@@ -2,14 +2,9 @@ import React, { useState, useEffect } from 'react';
 import './PlayersInfo.scss';
 import { GAME_STATE_UPDATE } from '../../events';
 import { useSocketContext } from '../../contexts/SocketProvider.tsx';
+import { useGameState, type PlayerInfo } from '../../contexts/GameStateProvider.tsx';
 
-// Define the shape of a player in the game state
-interface PlayerInfo {
-  uuid: string;
-  name: string;
-  cards: number;       // number of cards the player holds
-  isCurrent: boolean;  // true for the current (local) player
-}
+import BackCardImage from '../../assets/images/backcard.png';
 
 /**
  * Calculates the position around a circle for a given index
@@ -18,36 +13,27 @@ interface PlayerInfo {
  * @returns x/y percentages for CSS positioning
  */
 function calculatePosition(index: number, total: number): { left: string; top: string } {
-  const angle = (index * 360) / total - 90; // start at top (-90deg)
+  const angle = (index * 360) / total - 90;
   const radians = (angle * Math.PI) / 180;
-  const radius = 45; // percentage of container radius
+  const radius = 45;
   const left = 50 + Math.cos(radians) * radius;
   const top = 50 + Math.sin(radians) * radius;
+
   return { left: `${left}%`, top: `${top}%` };
 }
 
 export default function PlayersInfo() {
   const { socket } = useSocketContext();
+  const { gameState } = useGameState();
   const [others, setOthers] = useState<PlayerInfo[]>([]);
 
   useEffect(() => {
-    if (!socket) return;
+    if (!socket || !gameState) return;
 
-    // Handler for game state updates
-    const handleGameState = (state: { players: PlayerInfo[] }) => {
-      // Filter out the current player
-      const nonCurrent = state.players.filter(p => !p.isCurrent);
-      setOthers(nonCurrent);
-    };
+    const nonCurrent = gameState.players.filter(p => p.uuid !== socket.id);
 
-    // Listen for updates
-    socket.on(GAME_STATE_UPDATE, handleGameState);
-
-    // Cleanup listener on unmount
-    return () => {
-      socket.off(GAME_STATE_UPDATE, handleGameState);
-    };
-  }, [socket]);
+    setOthers(nonCurrent);
+  }, [socket, gameState]);
 
   /**
    * Renders card back placeholders
@@ -55,7 +41,7 @@ export default function PlayersInfo() {
    */
   const renderCards = (count: number) =>
     Array.from({ length: count }).map((_, i) => (
-      <div className="card-back" key={i} />
+      <div className="card-back" key={i} style={{ backgroundImage: `url(${BackCardImage})` }} />
     ));
 
   return (
@@ -69,7 +55,7 @@ export default function PlayersInfo() {
             style={{ left: pos.left, top: pos.top }}
           >
             <div className="player-name">{player.name}</div>
-            <div className="player-cards">{renderCards(player.cards)}</div>
+            <div className="player-cards">{renderCards(player.cardsCount)}</div>
           </div>
         );
       })}

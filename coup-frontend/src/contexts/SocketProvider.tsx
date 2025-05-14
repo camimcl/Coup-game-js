@@ -1,68 +1,71 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback, type ReactNode } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { useLocation } from 'react-router-dom';
 
 /**
- * Shape of the context value for socket management
+ * Shape of the context value for socket management, including initial handshake data.
  */
 interface SocketContextValue {
   /** Latest Socket.IO instance */
   socket: Socket | null;
   /** Currently connected namespace */
   connectedNs: string;
-  /** Function to switch namespaces */
-  connectToNamespace: (ns: string) => void;
+  /** Username sent on connect */
+  username: string | null;
+  /** Switches the connection to a new namespace and username */
+  connectToNamespace: (ns: string, username: string) => void;
 }
 
-// Create the context
 const SocketContext = createContext<SocketContextValue | undefined>(undefined);
 
-/**
- * Provider that encapsulates all socket logic internally.
- * Components can subscribe via `useSocketContext()`.
- */
 export function SocketProvider({ children }: { children: ReactNode }) {
+  const location = useLocation();
   const [namespace, setNamespace] = useState<string>('');
+  const [username, setUsername] = useState<string>(localStorage.getItem("playerName") || "");
   const [socket, setSocket] = useState<Socket | null>(null);
   const socketRef = useRef<Socket | null>(null);
 
-  // Effect: reconnect whenever namespace changes
   useEffect(() => {
-    // Tear down previous socket
+    const match = location.pathname.match(/^\/([^\/]+)$/);
+    if (match) {
+      setUsername(localStorage.getItem("playerName") || '');
+      setNamespace(match[1]);
+    }
+  }, [location.pathname]);
+
+  useEffect(() => {
     socketRef.current?.disconnect();
 
-    // Build connection URL
-    const url =
-      namespace.trim() === ''
-        ? import.meta.env.VITE_API_URL
-        : `${import.meta.env.VITE_API_URL}/${namespace}`;
+    const url = namespace.trim() === ''
+      ? import.meta.env.VITE_API_URL
+      : `${import.meta.env.VITE_API_URL}/${namespace}`;
 
-    // Initialize new socket
-    const sock = io(url);
+    const options = username
+      ? { auth: { username }, namespace }
+      : { namespace };
+
+    const sock = io(url, options);
     socketRef.current = sock;
     setSocket(sock);
 
-    // Cleanup on namespace change or unmount
     return () => {
       sock.disconnect();
       setSocket(null);
     };
-  }, [namespace]);
+  }, [namespace, username]);
 
-  // Expose a stable function to change namespaces
-  const connectToNamespace = useCallback((ns: string) => {
+  const connectToNamespace = useCallback((ns: string, user: string) => {
+    setUsername(user);
     setNamespace(ns);
   }, []);
 
   return (
-    <SocketContext.Provider value={{ socket, connectedNs: namespace, connectToNamespace }}>
+    <SocketContext.Provider value={{ socket, connectedNs: namespace, username, connectToNamespace }}>
       {children}
     </SocketContext.Provider>
   );
 }
 
-/**
- * Hook for consuming the socket context.
- */
 export function useSocketContext(): SocketContextValue {
   const context = useContext(SocketContext);
   if (!context) {

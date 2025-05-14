@@ -13,21 +13,27 @@
 }
 
 .player-name {
-  font-size: 0.9rem;
+  font-weight: 600;
+  font-size: 1.25rem;
   margin-bottom: variables.$space-1;
   color: variables.$color-muted;
-  color: variables.$color-muted;
+  color: variables.$color-primary;
+  margin-bottom: 1rem;
 }
 
 .player-cards {
   gap: variables.$space-1;
   gap: variables.$space-1;
+  display: flex;
+  align-items: center;
 }
 
 .card-back {
-  width: 1.5rem;
-  height: 2rem;
-  background-image: url('/assets/card-back.svg');
+  width: 100px;
+  // height: 864px;
+  aspect-ratio: 25/36;
+  background-repeat: no-repeat;
+  background-size: cover;
   border-radius: variables.$radius-sm;
   box-shadow: variables.$shadow-xs;
   box-shadow: variables.$shadow-xs;

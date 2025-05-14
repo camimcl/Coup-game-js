@@ -184,3 +184,5 @@ export const TAX_COLLECTED = 'TAX_COLLECTED';
  * Emit when a player's turn ends.
  */
 export const TURN_ENDED = 'TURN_ENDED';
+
+export const MATCH_STATE_UPDATE = 'MATCH_STATE_UPDATE';
