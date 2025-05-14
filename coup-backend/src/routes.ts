@@ -42,13 +42,29 @@ app.post('/api/create-match', (request: Request, response: Response) => {
   response.json({ matchId: match.getUUID() });
 });
 
+app.get('/api/get-match/:id', (request: Request, response: Response) => {
+  const { id } = request.params;
+
+  const match = matches[id.replace('/', '')];
+
+  if (!match) {
+    console.error(`Match ${id} not found.`);
+    response.status(404);
+
+    return;
+  }
+
+  response.json(match.toJSONObject());
+});
+
 app.post('/api/start-match/:id', (request: Request, response: Response) => {
   const { id } = request.params;
 
-  const match = matches[id];
+  const match = matches[id.replace('/', '')];
 
   if (!match) {
-    response.json({ message: `Unable to find match ${id}` });
+    response.status(404);
+
     return;
   }
 

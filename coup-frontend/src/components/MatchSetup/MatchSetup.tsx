@@ -9,16 +9,20 @@ import React, { useState, useEffect } from 'react';
 import './MatchSetup.scss';
 import { post } from '../../utils/api';
 import { useSocketContext } from '../../contexts/SocketProvider.tsx';
+import { useGameState } from '../../contexts/GameStateProvider.tsx';
+import { useMatch } from '../../contexts/MatchProvider.tsx';
 
 export default function MatchSetup() {
   const [matchId, setMatchId] = useState<string>('');
-  const [playerName, setPlayerName] = useState<string>('');
+  const [playerName, setPlayerName] = useState<string>(localStorage.getItem("playerName") || "");
   const [error, setError] = useState<string | null>(null);
   const [isHost, setIsHost] = useState<boolean>(false);
   const [playerCount, setPlayerCount] = useState<number>(0);
   const [playerNames, setPlayerNames] = useState<string[]>([]);
 
   const { socket, connectedNs, connectToNamespace } = useSocketContext();
+  const { gameState } = useGameState();
+  const { match } = useMatch();
 
   /**
    * Calls backend to create a new match and returns its ID
@@ -43,7 +47,7 @@ export default function MatchSetup() {
     try {
       const id = await createMatch();
       setMatchId(id);
-      connectToNamespace(id)
+      connectToNamespace(id, playerName)
       setIsHost(true);
     } catch (e: any) {
       setError(e.message);
@@ -64,7 +68,7 @@ export default function MatchSetup() {
       setError('Please enter your name.');
       return;
     }
-    connectToNamespace(trimmed);
+    connectToNamespace(trimmed, playerName);
     setIsHost(false);
   };
 
@@ -81,25 +85,22 @@ export default function MatchSetup() {
 
   };
 
+  useEffect(() => {
+    localStorage.setItem("playerName", playerName);
+  }, [playerName])
+
   // Listen for player count updates
   useEffect(() => {
-    if (!socket) return;
+    if (!socket || !gameState) return;
 
-    const handleCount = (count: number) => {
-      setPlayerCount(count);
-    };
+    setPlayerCount(gameState.players.length);
 
-    const handlePlayerNames = (names: string[]) => {
-      setPlayerNames(names);
-    };
+    setPlayerNames(gameState.players.map((p) => p.name));
+  }, [socket, gameState]);
 
-    socket.on('PLAYER_COUNT_UPDATE', handleCount);
-    socket.on('PLAYER_NAMES_UPDATE', handlePlayerNames);
-    return () => {
-      socket.off('PLAYER_COUNT_UPDATE', handleCount);
-      socket.off('PLAYER_NAMES_UPDATE', handlePlayerNames);
-    };
-  }, [socket, connectedNs]);
+  useEffect(() => {
+    setIsHost(match?.hostUUID === socket?.id)
+  }, [match, socket])
 
   return (
     <div className="match-setup-container">
@@ -146,7 +147,7 @@ export default function MatchSetup() {
             </ul>
           </div>
 
-          {isHost ? (
+          {isHost && playerCount >= 4 ? (
             <button className="start-game-button" onClick={handleStartGame}>
               Start Game
             </button>

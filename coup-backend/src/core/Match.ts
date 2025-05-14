@@ -2,7 +2,7 @@ import { Namespace, Server } from 'socket.io';
 import EventEmitter from 'events';
 import Player from './entities/Player.ts';
 import GameState from './GameState.ts';
-import { GAME_START, PLAYER_COUNT_UPDATE } from '../constants/events.ts';
+import { GAME_START, MATCH_STATE_UPDATE, PLAYER_COUNT_UPDATE } from '../constants/events.ts';
 
 /**
  * Manages a single game match: its players, state, and Socket.IO namespace.
@@ -22,6 +22,8 @@ export default class Match {
   /** The winning player, if the match has concluded. */
   private winner: Player | null = null;
 
+  private hostUUID: string;
+
   /** The game state manager for this match. */
   private gameState: GameState;
 
@@ -40,22 +42,28 @@ export default class Match {
     this.players = players;
     this.uuid = '123'; // TODO: replace with real UUID generation
     this.namespace = server.of(this.uuid);
+    this.hostUUID = players[0]?.uuid || '';
     this.internalBus = internalBus;
     this.gameState = new GameState(internalBus, this.namespace, this.players);
   }
 
   public startMatch() {
-    if (this.inProgress) return;
+    if (this.inProgress) {
+      console.log('Already in progress');
+      return;
+    }
 
     console.debug(`Starting match: ${this.uuid}`);
+
+    this.gameState.startGame();
+
+    this.inProgress = true;
 
     this.internalBus.emit(GAME_START);
 
     this.namespace.emit(GAME_START);
 
-    this.gameState.startGame();
-
-    this.inProgress = true;
+    this.emitMatchState();
   }
 
   /**
@@ -69,8 +77,11 @@ export default class Match {
       throw new Error('Cannot add player: match has already ended.');
     }
     this.players.push(player);
+    this.hostUUID = this.players[0].uuid;
 
+    this.gameState.broadcastState();
     this.namespace.emit(PLAYER_COUNT_UPDATE, this.players.length);
+    this.emitMatchState();
   }
 
   /**
@@ -79,9 +90,14 @@ export default class Match {
    * @param uuid - UUID of the player to remove.
    */
   removePlayer(uuid: string): void {
-    this.players = this.players.filter((p) => p.uuid !== uuid);
+    this.namespace.emit(MATCH_STATE_UPDATE, this.toJSONObject());
+    const index = this.players.findIndex((p) => p.uuid === uuid);
 
-    this.namespace.emit(PLAYER_COUNT_UPDATE, this.players.length);
+    this.players.splice(index, 1);
+    this.hostUUID = this.players[0]?.uuid || '';
+    this.gameState.removePlayer(uuid);
+
+    this.emitMatchState();
   }
 
   /**
@@ -91,6 +107,19 @@ export default class Match {
    */
   getUUID(): string {
     return this.uuid;
+  }
+
+  emitMatchState() {
+    this.namespace.emit(MATCH_STATE_UPDATE, this.toJSONObject());
+  }
+
+  toJSONObject() {
+    return {
+      uuid: this.uuid,
+      players: this.players.map((p) => p.publicProfile()),
+      hostUUID: this.hostUUID,
+      inProgress: this.inProgress,
+    };
   }
 
   /**

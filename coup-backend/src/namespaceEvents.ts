@@ -41,9 +41,12 @@ export default function initializeNamespace(
 
   namespace.on('connection', (socket) => {
     // eslint-disable-next-line no-console
-    console.log(`Player ${socket.id} has joined the room ${namespace.name}`);
 
-    match.addPlayer(new Player(socket.id, socket));
+    const username = (socket.handshake.auth.username || socket.id) as string;
+
+    match.addPlayer(new Player(username, socket));
+
+    console.log(`Player ${username} has joined the room ${namespace.name}`);
 
     socket.on('disconnect', () => {
       // eslint-disable-next-line no-console

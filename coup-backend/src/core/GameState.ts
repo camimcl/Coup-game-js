@@ -77,6 +77,8 @@ export default class GameState {
 
   public startGame() {
     this.dealInitialHands();
+
+    this.broadcastState();
   }
 
   /**
@@ -143,6 +145,8 @@ export default class GameState {
     );
 
     this.drawCardForPlayer(player);
+
+    this.broadcastState();
   }
 
   /**
@@ -156,7 +160,9 @@ export default class GameState {
     if (!player) return;
 
     this.eliminatedPlayers.push(player);
-    this.players = this.players.filter((p) => p.uuid !== uuid);
+    const index = this.players.findIndex((p) => p.uuid === uuid);
+
+    this.players.splice(index, 1);
 
     // Warns everyone that this player has been eliminated
     // TODO: send who killed that player?
@@ -164,6 +170,18 @@ export default class GameState {
       PLAYER_ELIMINATED,
       { playerUUID: uuid },
     );
+
+    this.broadcastState();
+  }
+
+  removePlayer(uuid: string) {
+    const index = this.players.findIndex((p) => p.uuid === uuid);
+
+    const removedPlayer = this.players.splice(index, 1);
+
+    removedPlayer[0].getCardsClone().forEach((card) => this.deck.push(card));
+
+    this.broadcastState();
   }
 
   /**
@@ -219,8 +237,8 @@ export default class GameState {
   public broadcastState(): void {
     this.namespace.emit(GAME_STATE_UPDATE, {
       uuid: this.uuid,
-      players: this.players.map((p) => p.uuid),
-      eliminated: this.eliminatedPlayers.map((p) => p.uuid),
+      players: this.players.map((p) => p.publicProfile()),
+      eliminated: this.eliminatedPlayers.map((p) => p.publicProfile()),
       currentTurnPlayer: this.getCurrentTurnPlayer()?.uuid,
       deckSize: this.deck.size(),
     });
