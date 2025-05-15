@@ -1,4 +1,3 @@
-import React from 'react';
 import MatchSetup from './components/MatchSetup/MatchSetup';
 import MatchDashboard from './components/MatchDashboard/MatchDashboard';
 import { useMatch } from './contexts/MatchProvider';

@@ -91,11 +91,9 @@ export default class Match {
    */
   removePlayer(uuid: string): void {
     this.namespace.emit(MATCH_STATE_UPDATE, this.toJSONObject());
-    const index = this.players.findIndex((p) => p.uuid === uuid);
 
-    this.players.splice(index, 1);
-    this.hostUUID = this.players[0]?.uuid || '';
     this.gameState.removePlayer(uuid);
+    this.hostUUID = this.players[0]?.uuid || '';
 
     this.emitMatchState();
   }

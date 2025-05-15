@@ -1,0 +1,37 @@
+.match-dashboard {
+  width: 100%;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    "players players players"
+    "deck prompt-wrapper logs"
+    "discarded-cards player-cards logs";
+  gap: 1rem;
+
+}
+
+.match-dashboard > #players {
+  grid-area: players;
+}
+
+.match-dashboard > #deck {
+  grid-area: deck;
+}
+
+.match-dashboard > #discarded-cards {
+  grid-area: discarded-cards;
+}
+
+.match-dashboard > #prompt-wrapper {
+  grid-area: prompt-wrapper;
+}
+
+.match-dashboard > #logs {
+  grid-area: logs;
+}
+
+.match-dashboard > #player-cards {
+  grid-area: player-cards;
+}

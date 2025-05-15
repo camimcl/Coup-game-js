@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useRef, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, useCallback, type ReactNode } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useLocation } from 'react-router-dom';
 
@@ -35,6 +35,8 @@ export function SocketProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     socketRef.current?.disconnect();
+    console.log(`Namespace or username changed, disconnecting ${namespace} ${username}`)
+
 
     const url = namespace.trim() === ''
       ? import.meta.env.VITE_API_URL
@@ -49,6 +51,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     setSocket(sock);
 
     return () => {
+      console.log(`(return) Namespace or username changed, disconnecting ${namespace} ${username}`)
       sock.disconnect();
       setSocket(null);
     };

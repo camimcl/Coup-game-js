@@ -16,6 +16,7 @@ export enum PromptVariant {
   OWNED_CARDS_CHOICE = 'OWNED_CARDS_CHOICE',
   OWNED_CARDS_CHOICE_MULTIPLE = 'OWNED_CARDS_CHOICE_MULTIPLE',
   CARDS_CHOICE = 'CARDS_CHOICE',
+  CHALLENGE = 'CHALLENGE'
 }
 
 /**
@@ -50,8 +51,11 @@ export class PromptService {
     message: string,
     options: PromptOption[],
     variant?: PromptVariant,
+    timeoutMillis?: number,
   ): void {
-    sender.broadcast.emit(PROMPT, { message, options, variant });
+    sender.broadcast.emit(PROMPT, {
+      message, options, variant, expiration: 1000000,
+    });
   }
 
   /**
@@ -66,8 +70,11 @@ export class PromptService {
     message: string,
     options: PromptOption[],
     variant?: PromptVariant,
+    timeoutMillis?: number,
   ): void {
-    this.namespace.to(target.id).emit(PROMPT, { message, options, variant });
+    this.namespace.to(target.id).emit(PROMPT, {
+      message, options, variant, expiration: 1000000,
+    });
   }
 
   /**
@@ -101,7 +108,7 @@ export class PromptService {
   async askSingleCard(
     player: Player,
     variant: PromptVariant = PromptVariant.CARDS_CHOICE,
-    timeoutMillis = 15000,
+    timeoutMillis = 1000000,
   ): Promise<string> {
     const options = player.getCardsClone().map((card) => ({
       label: card.variant,
@@ -110,7 +117,7 @@ export class PromptService {
 
     const defaultUuid = options[0].value as string;
 
-    this.emitToPlayer(player.socket, 'Escolha uma das cartas', options, variant);
+    this.emitToPlayer(player.socket, 'Escolha uma das cartas', options, variant, timeoutMillis);
 
     return this.waitForResponse(player.socket, defaultUuid, timeoutMillis);
   }
@@ -123,7 +130,7 @@ export class PromptService {
    */
   async askTwoCards(
     player: Player,
-    timeoutMillis = 7000,
+    timeoutMillis = 1000000,
   ): Promise<[string, string]> {
     const all = player.getCardsClone();
 
@@ -134,6 +141,7 @@ export class PromptService {
       'Escolha 2 cartas',
       options,
       PromptVariant.OWNED_CARDS_CHOICE_MULTIPLE,
+      timeoutMillis,
     );
 
     return new Promise((resolve) => {
@@ -161,14 +169,14 @@ export class PromptService {
   async challengePlayer(
     target: Socket,
     message: string,
-    timeoutMillis = 15000,
+    timeoutMillis = 1000000,
   ): Promise<typeof PROMPT_OPTION_CHALLENGE_ACCEPT | typeof PROMPT_OPTION_CHALLENGE_PASS> {
     const options: PromptOption[] = [
       { label: 'Contestar', value: PROMPT_OPTION_CHALLENGE_ACCEPT },
       { label: 'Passar', value: PROMPT_OPTION_CHALLENGE_PASS },
     ];
     const defaultVal = PROMPT_OPTION_CHALLENGE_PASS;
-    this.emitToPlayer(target, message, options, PromptVariant.CARDS_CHOICE);
+    this.emitToPlayer(target, message, options, PromptVariant.CHALLENGE, timeoutMillis);
     const response = await this.waitForResponse(target, defaultVal, timeoutMillis);
     return response as typeof PROMPT_OPTION_CHALLENGE_ACCEPT | typeof PROMPT_OPTION_CHALLENGE_PASS;
   }
@@ -185,14 +193,14 @@ export class PromptService {
     sender: Socket,
     playersCount: number,
     message: string,
-    timeoutMillis = 15000,
+    timeoutMillis = 1000000,
   ): Promise<{ challengerId: string; response: PROMPT_OPTION_VALUE }> {
     const options: PromptOption[] = [
       { label: 'Contestar', value: PROMPT_OPTION_CHALLENGE_ACCEPT },
       { label: 'Passar', value: PROMPT_OPTION_CHALLENGE_PASS },
     ];
 
-    this.emitToOthers(sender, message, options, PromptVariant.CARDS_CHOICE);
+    this.emitToOthers(sender, message, options, PromptVariant.CHALLENGE, timeoutMillis);
 
     return new Promise((resolve) => {
       let ignored = 0;
@@ -204,7 +212,8 @@ export class PromptService {
         eventName: PROMPT_RESPONSE,
         excludeSocketId: sender.id,
         callback: (data, id) => {
-          const resp = (data as PromptOption).value as PROMPT_OPTION_VALUE;
+          const resp = data as PROMPT_OPTION_VALUE;
+          console.log(`Challenge response: ${resp}`)
           if (resp === PROMPT_OPTION_CHALLENGE_PASS) {
             ignored += 1;
             if (ignored === playersCount - 1) {
@@ -236,9 +245,9 @@ export class PromptService {
     options: PromptOption[],
     defaultValue?: string,
     variant?: PromptVariant,
-    timeoutMillis = 15000,
+    timeoutMillis = 1000000,
   ): Promise<string> {
-    this.emitToPlayer(target, message, options, variant);
+    this.emitToPlayer(target, message, options, variant, timeoutMillis);
     const fallback = defaultValue ?? (options[0]?.value.toString() ?? '');
     return this.waitForResponse(target, fallback, timeoutMillis);
   }
