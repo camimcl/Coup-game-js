@@ -63,14 +63,18 @@ export default function initializeNamespace(
 
     const player = match.getGameState().getCurrentTurnPlayer();
 
-    promptService.emitToPlayer(
-      player.socket,
-      'O que deseja fazer',
-      availableOptions,
-    );
+    const intervalId = setInterval(() => {
+      //console.log(`Asking ${player.name} what they want to do`);
+      promptService.emitToPlayer(
+        player.socket,
+        'O que deseja fazer',
+        availableOptions,
+      );
+    }, 1000);
 
     const response = await new Promise<string>((resolve) => {
       player.socket.once(PROMPT_RESPONSE, (res: string) => {
+        clearInterval(intervalId);
         resolve(res);
       });
     });

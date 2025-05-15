@@ -104,7 +104,7 @@ export default class AssassinCase extends BaseCase {
     ];
 
     return this.promptService.prompt(
-      this.currentPlayer.socket,
+      this.targetPlayer.socket,
       `${this.currentPlayer.name} está tentando te assassinar. O que você deseja fazer?`,
       options,
       options[0].value,

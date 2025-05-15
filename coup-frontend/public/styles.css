@@ -1,0 +1,121 @@
+/*! tailwindcss v4.1.6 | MIT License | https://tailwindcss.com */
+@layer properties;
+.absolute {
+  position: absolute;
+}
+.relative {
+  position: relative;
+}
+.h-full {
+  height: 100%;
+}
+.w-full {
+  width: 100%;
+}
+.-rotate-1 {
+  rotate: calc(1deg * -1);
+}
+.-rotate-3 {
+  rotate: calc(3deg * -1);
+}
+.rotate-1 {
+  rotate: 1deg;
+}
+.rotate-2 {
+  rotate: 2deg;
+}
+.rotate-3 {
+  rotate: 3deg;
+}
+.transform {
+  transform: var(--tw-rotate-x,) var(--tw-rotate-y,) var(--tw-rotate-z,) var(--tw-skew-x,) var(--tw-skew-y,);
+}
+.match-dashboard {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: auto auto auto;
+  grid-template-areas: "players players players" "deck prompt-wrapper logs" "discarded-cards player-cards logs";
+  gap: 1rem;
+}
+.match-dashboard > #players {
+  grid-area: players;
+}
+.match-dashboard > #deck {
+  grid-area: deck;
+}
+.match-dashboard > #discarded-cards {
+  grid-area: discarded-cards;
+}
+.match-dashboard > #prompt-wrapper {
+  grid-area: prompt-wrapper;
+}
+.match-dashboard > #logs {
+  grid-area: logs;
+}
+.match-dashboard > #player-cards {
+  grid-area: player-cards;
+}
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+body, h1, h2, h3, h4, h5, h6, p, ul, ol, figure, blockquote {
+  margin: 0;
+  padding: 0;
+}
+body {
+  font-family: "Inter", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #2e2e2e;
+  background-color: #fafafa;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4, h5, h6 {
+  color: #2e2e2e;
+  font-weight: 600;
+}
+a {
+  color: #005f73;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+ul, ol {
+  list-style: none;
+}
+img, video {
+  max-width: 100%;
+  display: block;
+}
+@property --tw-rotate-x {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-rotate-y {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-rotate-z {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-skew-x {
+  syntax: "*";
+  inherits: false;
+}
+@property --tw-skew-y {
+  syntax: "*";
+  inherits: false;
+}
+@layer properties {
+  @supports ((-webkit-hyphens: none) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color:rgb(from red r g b)))) {
+    *, ::before, ::after, ::backdrop {
+      --tw-rotate-x: initial;
+      --tw-rotate-y: initial;
+      --tw-rotate-z: initial;
+      --tw-skew-x: initial;
+      --tw-skew-y: initial;
+    }
+  }
+}

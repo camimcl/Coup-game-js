@@ -69,7 +69,7 @@ export default class GameState {
       this.eliminatePlayer(player.uuid);
 
       // Warns every one that this player has died
-      this.namespace.emit(PLAYER_DEATH, { playerId: player.uuid });
+      // this.namespace.emit(PLAYER_DEATH, { playerId: player.uuid });
     }
 
     this.broadcastState();
@@ -159,17 +159,22 @@ export default class GameState {
     const [player] = this.players.filter((p) => p.uuid === uuid);
     if (!player) return;
 
-    this.eliminatedPlayers.push(player);
+    console.log(`${player.name} has been eliminated`);
     const index = this.players.findIndex((p) => p.uuid === uuid);
 
-    this.players.splice(index, 1);
+    if (index >= this.currentTurnPlayerIndex) {
+      this.currentTurnPlayerIndex -= 1;
+    }
+
+    this.eliminatedPlayers.push(this.players.splice(index, 1)[0]);
 
     // Warns everyone that this player has been eliminated
     // TODO: send who killed that player?
-    this.namespace.emit(
-      PLAYER_ELIMINATED,
-      { playerUUID: uuid },
-    );
+
+    // this.namespace.emit(
+    //  PLAYER_ELIMINATED,
+    //  { playerUUID: uuid },
+    // );
 
     this.broadcastState();
   }
@@ -179,9 +184,20 @@ export default class GameState {
 
     const removedPlayer = this.players.splice(index, 1);
 
-    removedPlayer[0].getCardsClone().forEach((card) => this.deck.push(card));
+    removedPlayer[0]?.getCardsClone().forEach((card) => this.deck.push(card));
 
-    this.broadcastState();
+    // If the current player is leaving the match,
+    // start a new turn
+    if (index === this.currentTurnPlayerIndex) {
+      console.log('It\'s the current player turn that is leaving the room');
+      // We need to go back one index so the method
+      // this.goToNextTurn() sets the right value to it
+      this.currentTurnPlayerIndex -= 1;
+
+      this.goToNextTurn();
+    } else {
+      this.broadcastState();
+    }
   }
 
   /**
@@ -241,6 +257,7 @@ export default class GameState {
       eliminated: this.eliminatedPlayers.map((p) => p.publicProfile()),
       currentTurnPlayer: this.getCurrentTurnPlayer()?.uuid,
       deckSize: this.deck.size(),
+      knownCards: this.knownCards,
     });
   }
 

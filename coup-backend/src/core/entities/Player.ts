@@ -1,5 +1,6 @@
 import { Socket } from 'socket.io';
 import Card from './Card.ts';
+import { CARD_DISCARDED, CARD_DRAW, PRIVATE_PLAYER_INFO_UPDATE, REQUEST_PRIVATE_PLAYER_INFO } from '../../constants/events.ts';
 
 /**
  * Represents a player in the game, holding cards, coins, and a socket connection.
@@ -34,6 +35,10 @@ export default class Player {
     // Start with one Duke card and 2 coins
     this.cards = [];
     this.coins = 2;
+
+    this.socket.on(REQUEST_PRIVATE_PLAYER_INFO, () => {
+      this.socket.emit(PRIVATE_PLAYER_INFO_UPDATE, this.privateProfile());
+    });
   }
 
   /**
@@ -52,6 +57,8 @@ export default class Player {
 
     const [removed] = this.cards.splice(index, 1);
 
+    this.socket.emit(CARD_DISCARDED, removed);
+
     return removed;
   }
 
@@ -61,6 +68,8 @@ export default class Player {
    * @param card - Card to add.
    */
   public addCard(card: Card): void {
+    this.socket.emit(CARD_DRAW, card);
+
     this.cards.push(card);
   }
 
@@ -132,6 +141,25 @@ export default class Player {
       name: this.name,
       coins: this.coins,
       cardsCount: this.cards.length,
+    };
+  }
+
+  /**
+ * Returns a public-facing summary of this player, suitable for broadcasting.
+ *
+ * @returns An object containing UUID, name, coin count, and number of cards.
+ */
+  public privateProfile(): {
+    uuid: string;
+    name: string;
+    coins: number;
+    cards: Card[];
+    } {
+    return {
+      uuid: this.uuid,
+      name: this.name,
+      coins: this.coins,
+      cards: this.cards
     };
   }
 }

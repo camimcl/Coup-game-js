@@ -1,18 +1,26 @@
-import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { useSocketContext } from './SocketProvider.tsx';
 import { GAME_STATE_UPDATE } from '../events';
+import type { CardVariant } from '../constants/constants.ts';
 
 // Define the shape of a player (mirror your PlayerInfo interface)
 export interface PlayerInfo {
   uuid: string;
   name: string;
   cardsCount: number;
-  isCurrent: boolean;
+  coins: number;
+}
+
+export interface Card {
+  uuid: string;
+  variant: CardVariant
 }
 
 // Define the overall game state shape
 export interface GameState {
   players: PlayerInfo[];
+  deckSize: number
+  knownCards: Card[]
   // add other game state fields here as needed
 }
 
