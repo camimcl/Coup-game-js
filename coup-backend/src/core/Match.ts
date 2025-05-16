@@ -72,18 +72,26 @@ export default class Match {
    * @param player - The player to add.
    * @throws If the match has already ended.
    */
-  addPlayer(player: Player): void {
+  addPlayer(player: Player): boolean {
     if (this.hasEnded) {
-      throw new Error('Cannot add player: match has already ended.');
+      console.warn('Cannot add player: match has already ended.');
+      return false; // Indicate failure to add player
     }
+
+    if (this.inProgress) {
+      console.warn('Cannot add player: match is already in progress. No new players allowed.');
+      return false; // Indicate failure to add player
+    }
+
     this.players.push(player);
     this.hostUUID = this.players[0].uuid;
 
     this.gameState.broadcastState();
     this.namespace.emit(PLAYER_COUNT_UPDATE, this.players.length);
     this.emitMatchState();
-  }
 
+    return true; // Indicate success in adding player
+  }
   /**
    * Removes a player from the match by their UUID.
    *

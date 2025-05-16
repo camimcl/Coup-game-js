@@ -40,18 +40,22 @@ export default function initializeNamespace(
   };
 
   namespace.on('connection', (socket) => {
-    // eslint-disable-next-line no-console
-
     const username = (socket.handshake.auth.username || socket.id) as string;
+
+    // Check if the match is already in progress
+    if (match.getGameState().getPlayersCount() > 0 && match['inProgress']) {
+      console.warn(`Player ${username} tried to join an ongoing match.`);
+      socket.emit('error', { message: 'Cannot join: match is already in progress.' });
+      socket.disconnect();
+      return;
+    }
 
     match.addPlayer(new Player(username, socket));
 
     console.log(`Player ${username} has joined the room ${namespace.name}`);
 
     socket.on('disconnect', () => {
-      // eslint-disable-next-line no-console
       console.log(`Player ${socket.id} has left the room ${namespace.name}`);
-
       match.removePlayer(socket.id);
     });
   });

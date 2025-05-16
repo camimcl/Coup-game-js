@@ -32,7 +32,6 @@ export default class Player {
     this.uuid = socket.id;
     this.socket = socket;
 
-    // Start with one Duke card and 2 coins
     this.cards = [];
     this.coins = 2;
 
