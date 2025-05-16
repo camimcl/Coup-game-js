@@ -18,8 +18,8 @@ const CARDS = {
 }
 
 /**
- * Renders all known (discarded) cards side by side.
- * If they would overflow, each card is shrunk to fit evenly.
+ * Renders all known (discarded) cards grouped by variant and stacked.
+ * Cards of the same variant are stacked with partial visibility.
  */
 const DiscardedCards: React.FC = () => {
   const { gameState } = useGameState();
@@ -27,31 +27,44 @@ const DiscardedCards: React.FC = () => {
   if (!gameState) return null;
 
   const { knownCards } = gameState;
-  const count = knownCards.length;
-  const gapPx = 8; // corresponds to Tailwind 'gap-2'
-  const cardWidth = count > 0
-    ? `calc((100% - ${(count - 1) * gapPx}px) / ${count})`
-    : '0';
+
+  // Group cards by variant
+  const groupedCards = knownCards.reduce((acc, card) => {
+    if (!acc[card.variant]) {
+      acc[card.variant] = [];
+    }
+    acc[card.variant].push(card);
+    return acc;
+  }, {} as Record<string, typeof knownCards>);
 
   return (
-    <div
-      id="discarded-cards"
-    >
+    <div id="discarded-cards">
       <p>Cartas descartadas</p>
 
-      <div
-        className="flex items-center gap-2 overflow-hidden p-2"
-      >
-        {knownCards.map((card, idx) => (
-          <img
-            key={idx}
-            src={CARDS[card.variant]}
-            alt={card.variant}
-            style={{ width: cardWidth, maxWidth: "100px" }}
-            className="object-contain flex-shrink-0"
-          />
+      <div className="flex flex-wrap gap-4 p-2">
+        {Object.entries(groupedCards).map(([variant, cards]) => (
+          <div key={variant} className="relative" style={{ width: "100px", height: "140px" }}>
+            {cards.map((card, idx) => (
+              <img
+                key={idx}
+                src={CARDS[variant]}
+                alt={variant}
+                style={{
+                  position: "absolute",
+                  top: `${idx * 20}px`, // Offset each card slightly
+                  left: `${idx * 5}px`,
+                  width: "100px",
+                  height: "140px",
+                  zIndex: idx
+                }}
+                className="object-contain"
+              />
+            ))}
+            <span className="absolute bottom-0 right-0 bg-white text-black text-xs px-1 rounded">
+              {cards.length}
+            </span>
+          </div>
         ))}
-
       </div>
     </div>
   );
