@@ -20,6 +20,7 @@ const PlayerCards: React.FC = () => {
   const [isDiscarding, setIsDiscarding] = useState(false);
   const previousCardsRef = useRef<Card[]>([]);
   const processingDiscardRef = useRef<boolean>(false);
+  const lastUpdateTimeRef = useRef<number>(0);
   
   const processCardDiscard = useCallback((cardId: string) => {
     if (processingDiscardRef.current || discardedCardId === cardId) return;
@@ -41,20 +42,29 @@ const PlayerCards: React.FC = () => {
   const handlePlayerInfoUpdate = useCallback((playerInfo: PrivatePlayerInfo) => {
     if (processingDiscardRef.current) return;
     
-    const currentCards = [...previousCardsRef.current];
-    previousCardsRef.current = [...(playerInfo.cards || [])];
+    const now = Date.now();
+    if (now - lastUpdateTimeRef.current < 500) return;
+    lastUpdateTimeRef.current = now;
     
-    if (currentCards.length > playerInfo.cards.length && currentCards.length > 0) {
+    const currentCards = [...previousCardsRef.current];
+    
+    if (currentCards.length > 0 && 
+        playerInfo.cards.length > 0 && 
+        currentCards.length > playerInfo.cards.length) {
+      
       const removedCard = currentCards.find(
         oldCard => !playerInfo.cards.some(newCard => newCard.uuid === oldCard.uuid)
       );
       
-      if (removedCard && !processingDiscardRef.current) {
+      if (removedCard) {
+        previousCardsRef.current = [...playerInfo.cards];
         processCardDiscard(removedCard.uuid);
       } else {
+        previousCardsRef.current = [...playerInfo.cards];
         setCards(playerInfo.cards);
       }
     } else {
+      previousCardsRef.current = [...playerInfo.cards];
       setCards(playerInfo.cards);
     }
     
@@ -62,37 +72,41 @@ const PlayerCards: React.FC = () => {
   }, [processCardDiscard]);
 
   const handleCardDiscarded = useCallback((data: {cardId: string}) => {
-    if (data && data.cardId && !processingDiscardRef.current) {
-      processCardDiscard(data.cardId);
-    }
+    if (!data || !data.cardId || processingDiscardRef.current) return;
+    processCardDiscard(data.cardId);
   }, [processCardDiscard]);
 
   useEffect(() => {
     if (!socket) return;
     
+    // Request player info initially
     socket.emit(REQUEST_PRIVATE_PLAYER_INFO);
     
     socket.on(PRIVATE_PLAYER_INFO_UPDATE, handlePlayerInfoUpdate);
     socket.on(CARD_DISCARDED, handleCardDiscarded);
     
     const refreshInterval = setInterval(() => {
-      if (!processingDiscardRef.current) {
+      if (!processingDiscardRef.current && !isDiscarding) {
         socket.emit(REQUEST_PRIVATE_PLAYER_INFO);
       }
-    }, 5000);
+    }, 8000);
     
     return () => {
       socket.off(PRIVATE_PLAYER_INFO_UPDATE, handlePlayerInfoUpdate);
       socket.off(CARD_DISCARDED, handleCardDiscarded);
       clearInterval(refreshInterval);
     };
-  }, [socket, handlePlayerInfoUpdate, handleCardDiscarded]);
+  }, [socket, handlePlayerInfoUpdate, handleCardDiscarded, isDiscarding]);
 
   useEffect(() => {
-    if (socket && gameState && !processingDiscardRef.current) {
-      socket.emit(REQUEST_PRIVATE_PLAYER_INFO);
+    if (socket && gameState && !processingDiscardRef.current && !isDiscarding) {
+      const timer = setTimeout(() => {
+        socket.emit(REQUEST_PRIVATE_PLAYER_INFO);
+      }, 300);
+      
+      return () => clearTimeout(timer);
     }
-  }, [socket, gameState]);
+  }, [socket, gameState, isDiscarding]);
 
   if (!gameState || !socket) return null;
 

@@ -51,6 +51,7 @@ const Deck: React.FC = () => {
                 </div>
               ))}
               
+              {/* so pra avisar que são quantas faltam agora */}
               {deckSize > visibleStackSize && (
                 <div className="remaining-indicator">
                   +{deckSize - visibleStackSize}

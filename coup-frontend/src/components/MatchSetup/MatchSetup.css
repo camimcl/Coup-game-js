@@ -255,7 +255,7 @@
 }
 
 .setup-title {
-  font-family: 'Fredoka One', cursive;
+  font-family: 'Bungee', cursive;
   font-size: 1.8em;
   color: var(--coup-purple);
   /* text-shadow: 
@@ -703,7 +703,7 @@
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 10px;
   max-height: 250px;
-  overflow-y: auto;
+  /* overflow-y: auto; */
   padding-right: 5px;
 }
 
