@@ -1,0 +1,421 @@
+/* @import url('https://fonts.googleapis.com/css2?family=Creepster&family=Bungee:wght@400;700&display=swap'); */
+@import url('https://fonts.googleapis.com/css2?family=Henny+Penny&display=swap');
+
+:root {
+  --coup-yellow: #FDD835;
+  --coup-red: #C62828;
+  --coup-blue: #1976D2;
+  --coup-green: #388E3C;
+  --coup-purple: #7B1FA2;
+  --coup-orange: #FF8F00;
+  --coup-brown: #8D6E63;
+  --coup-black: #212121;
+  --coup-white: #FFF8E1;
+  --coup-cream: #FFF3C4;
+  --coup-shadow: rgba(0,0,0,0.4);
+  --coup-glow: rgba(253, 216, 53, 0.6);
+}
+
+.deck-container {
+  grid-area: deck;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  position: relative;
+}
+
+.deck-wrapper {
+  background: linear-gradient(135deg, var(--coup-blue) 0%, #0D47A1 100%);
+  border: 6px solid var(--coup-black);
+  border-radius: 20px;
+  padding: 15px;
+  min-width: 200px;
+  box-shadow: 
+    0 0 0 3px var(--coup-yellow),
+    8px 8px 0 var(--coup-shadow);
+  position: relative;
+  overflow: hidden;
+  animation: deckPulse 4s ease-in-out infinite;
+}
+
+@keyframes deckPulse {
+  0%, 100% { 
+    box-shadow: 
+      0 0 0 3px var(--coup-yellow),
+      8px 8px 0 var(--coup-shadow); 
+  }
+  50% { 
+    box-shadow: 
+      0 0 0 3px var(--coup-yellow),
+      8px 8px 0 var(--coup-shadow),
+      0 0 15px var(--coup-glow); 
+  }
+}
+
+.deck-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,0.2),
+    transparent
+  );
+  animation: deckShimmer 4s ease-in-out infinite;
+}
+
+@keyframes deckShimmer {
+  0% { left: -100%; }
+  50% { left: 100%; }
+  100% { left: 100%; }
+}
+
+.deck-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 15px;
+  position: relative;
+  z-index: 5;
+}
+
+.deck-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.deck-icon {
+  font-size: 1.2em;
+  animation: iconBounce 2s ease-in-out infinite;
+}
+
+@keyframes iconBounce {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-3px) rotate(10deg); }
+}
+
+.title-text {
+  font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  font-weight: 600;
+  font-size: 25px;
+  color: var(--coup-white);
+  text-shadow: 
+    2px 2px 0 var(--coup-black),
+    4px 4px 0 var(--coup-shadow);
+}
+
+.deck-counter {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--coup-yellow);
+  border: 3px solid var(--coup-black);
+  border-radius: 15px;
+  padding: 3px 12px;
+  box-shadow: 0 3px 0 var(--coup-shadow);
+}
+
+.counter-value {
+  font-family: 'Bungee', cursive;
+  font-size: 1.2em;
+  font-weight: bold;
+  color: var(--coup-red);
+  text-shadow: 1px 1px 0 var(--coup-black);
+}
+
+.counter-text {
+  font-family: 'Bungee', cursive;
+  font-size: 0.8em;
+  color: var(--coup-black);
+  text-transform: uppercase;
+}
+
+.deck-stage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 150px;
+  position: relative;
+}
+
+.cards-stack {
+  position: relative;
+  width: 100px;
+  height: 140px;
+  margin: 0 auto;
+}
+
+.deck-card {
+  --offset-x: calc(var(--card-index) * 3px);
+  --offset-y: calc(var(--card-index) * -2px);
+  --rotation: calc(((var(--card-index) * 7) % 10) - 5deg);
+  
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform: 
+    translate(var(--offset-x), var(--offset-y))
+    rotate(var(--rotation));
+  transition: all 0.3s ease;
+  z-index: calc(10 - var(--card-index));
+  animation: cardStackEntry 0.5s ease-out forwards;
+  animation-delay: calc(var(--card-index) * 0.1s);
+  opacity: 0;
+}
+
+@keyframes cardStackEntry {
+  from {
+    opacity: 0;
+    transform: 
+      translate(var(--offset-x), calc(var(--offset-y) - 30px))
+      rotate(calc(var(--rotation) * 2));
+  }
+  to {
+    opacity: 1;
+    transform: 
+      translate(var(--offset-x), var(--offset-y))
+      rotate(var(--rotation));
+  }
+}
+
+.card-face {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  background: var(--coup-brown);
+  border: 4px solid var(--coup-black);
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+}
+
+.card-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 10px,
+      rgba(0,0,0,0.05) 10px,
+      rgba(0,0,0,0.05) 20px
+    );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pattern-circle {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--coup-red);
+  border: 3px solid var(--coup-black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+}
+
+.pattern-circle::before {
+  content: 'C';
+  font-family: "Henny Penny", system-ui;
+  font-size: 2em;
+  color: var(--coup-yellow);
+  text-shadow: 1px 1px 0 var(--coup-black);
+}
+
+.card-edge {
+  position: absolute;
+  background: var(--coup-yellow);
+  z-index: 5;
+}
+
+.card-edge.top, .card-edge.bottom {
+  height: 3px;
+  width: calc(100% - 6px);
+  left: 3px;
+}
+
+.card-edge.left, .card-edge.right {
+  width: 3px;
+  height: calc(100% - 6px);
+  top: 3px;
+}
+
+.card-edge.top { top: 0; }
+.card-edge.bottom { bottom: 0; }
+.card-edge.left { left: 0; }
+.card-edge.right { right: 0; }
+
+.card-shadow {
+  position: absolute;
+  bottom: -8px;
+  left: 5px;
+  right: 5px;
+  height: 10px;
+  background: var(--coup-shadow);
+  border-radius: 50%;
+  filter: blur(3px);
+  opacity: 0.6;
+  z-index: -1;
+}
+
+.cards-stack:hover .deck-card {
+  --hover-translate-x: calc(var(--card-index) * 8px - 20px);
+  --hover-rotate: calc(var(--card-index) * 5deg - 10deg);
+  
+  transform: 
+    translate(var(--hover-translate-x), 0)
+    rotate(var(--hover-rotate));
+  transition-duration: 0.4s;
+}
+
+.deck-card:last-child {
+  animation: topCardFloat 3s ease-in-out infinite;
+}
+
+@keyframes topCardFloat {
+  0%, 100% { transform: translate(var(--offset-x), var(--offset-y)) rotate(var(--rotation)); }
+  50% { transform: translate(var(--offset-x), calc(var(--offset-y) - 5px)) rotate(var(--rotation)); }
+}
+
+.remaining-indicator {
+  position: absolute;
+  bottom: -10px;
+  right: -10px;
+  background: var(--coup-red);
+  color: var(--coup-white);
+  border: 3px solid var(--coup-black);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Bungee', cursive;
+  font-weight: bold;
+  font-size: 0.9em;
+  box-shadow: 0 3px 0 var(--coup-shadow);
+  text-shadow: 1px 1px 0 var(--coup-black);
+  z-index: 20;
+  animation: countPulse 2s ease-in-out infinite;
+}
+
+@keyframes countPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.empty-deck {
+  text-align: center;
+  color: var(--coup-white);
+  font-family: 'Bungee', cursive;
+  animation: emptyPulse 3s ease-in-out infinite;
+}
+
+.empty-icon {
+  font-size: 2em;
+  margin-bottom: 10px;
+  animation: emptyIconSpin 4s linear infinite;
+}
+
+@keyframes emptyIconSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.empty-deck p {
+  text-shadow: 2px 2px 0 var(--coup-black);
+  margin: 0;
+}
+
+@keyframes emptyPulse {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+.deck-decorations {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.deck-sparkle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: var(--coup-yellow);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--coup-yellow);
+  animation: sparkleFloat 3s ease-in-out infinite;
+}
+
+.sparkle-1 {
+  top: 20%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.sparkle-2 {
+  top: 70%;
+  right: 15%;
+  animation-delay: 1s;
+}
+
+.sparkle-3 {
+  bottom: 30%;
+  left: 70%;
+  animation-delay: 2s;
+}
+
+@keyframes sparkleFloat {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0) translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1) translateY(-10px);
+  }
+}
+
+@media (max-width: 768px) {
+  .deck-wrapper {
+    padding: 10px;
+    min-width: 160px;
+  }
+  
+  .title-text {
+    font-size: 1.3em;
+  }
+  
+  .cards-stack {
+    width: 80px;
+    height: 120px;
+  }
+  
+  .remaining-indicator {
+    width: 35px;
+    height: 35px;
+    font-size: 0.8em;
+  }
+}

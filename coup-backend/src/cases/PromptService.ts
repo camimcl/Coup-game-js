@@ -1,6 +1,6 @@
 /* eslint-disable class-methods-use-this */
 import { Namespace, Socket } from 'socket.io';
-import { CLEAR_PROMPT, PROMPT, PROMPT_RESPONSE } from '../constants/events.ts';
+import { PROMPT, PROMPT_RESPONSE } from '../constants/events.ts';
 import {
   PROMPT_OPTION_CHALLENGE_ACCEPT,
   PROMPT_OPTION_CHALLENGE_PASS,
@@ -9,6 +9,9 @@ import {
 import Player from '../core/entities/Player.ts';
 import { onceEverySocketExceptOne } from '../socket/utils/listen.ts';
 
+/**
+ * Describes how the client should render or interpret a prompt.
+ */
 export enum PromptVariant {
   OWNED_CARDS_CHOICE = 'OWNED_CARDS_CHOICE',
   OWNED_CARDS_CHOICE_MULTIPLE = 'OWNED_CARDS_CHOICE_MULTIPLE',
@@ -16,11 +19,19 @@ export enum PromptVariant {
   CHALLENGE = 'CHALLENGE'
 }
 
+/**
+ * Option presented to the player within a prompt.
+ */
 export interface PromptOption {
+  /** Text displayed to the user. */
   label: string;
+  /** Underlying value returned on selection. */
   value: string | boolean | number;
 }
 
+/**
+ * Service to emit prompts via Socket.IO and await player responses.
+ */
 export class PromptService {
   private namespace: Namespace;
 
@@ -28,7 +39,13 @@ export class PromptService {
     this.namespace = namespace;
   }
 
-  // TODO: use timeoutMillis
+  /**
+   * Emit a prompt to all sockets except the sender.
+   * @param sender Socket to exclude from broadcast.
+   * @param message Prompt text.
+   * @param options Choice options.
+   * @param variant Optional client rendering variant.
+   */
   emitToOthers(
     sender: Socket,
     message: string,
@@ -41,7 +58,13 @@ export class PromptService {
     });
   }
 
-  // TODO: use timeoutMillis
+  /**
+   * Emit a prompt to a specific socket.
+   * @param target Socket to receive the prompt.
+   * @param message Prompt text.
+   * @param options Choice options.
+   * @param variant Optional client rendering variant.
+   */
   emitToPlayer(
     target: Socket,
     message: string,
@@ -54,6 +77,13 @@ export class PromptService {
     });
   }
 
+  /**
+   * Await a single response from a socket or resolve with a default after timeout.
+   * @param socket Socket to listen on.
+   * @param defaultValue Fallback value if timeout occurs.
+   * @param timeoutMillis Timeout in milliseconds.
+   * @returns Promise resolving to the response or default.
+   */
   private waitForResponse(
     socket: Socket,
     defaultValue: string,
@@ -61,21 +91,26 @@ export class PromptService {
   ): Promise<string> {
     return new Promise((resolve) => {
       const timer = setTimeout(() => resolve(defaultValue), timeoutMillis);
-
       socket.once(PROMPT_RESPONSE, (response: string) => {
         clearTimeout(timer);
-
         resolve(response);
       });
     });
   }
 
+  /**
+   * Ask a player to choose a single card.
+   * @param player Target player entity.
+   * @param variant Optional rendering variant.
+   * @param timeoutMillis How long to wait before selecting first card.
+   * @returns Promise resolving to the chosen card UUID.
+   */
   async askSingleCard(
     player: Player,
     variant: PromptVariant = PromptVariant.CARDS_CHOICE,
     timeoutMillis = 1000000,
   ): Promise<string> {
-    const options = player.getCards().map((card) => ({
+    const options = player.getCardsClone().map((card) => ({
       label: card.variant,
       value: card.uuid,
     }));
@@ -87,11 +122,17 @@ export class PromptService {
     return this.waitForResponse(player.socket, defaultUuid, timeoutMillis);
   }
 
+  /**
+   * Ask a player to choose two distinct cards.
+   * @param player Target player entity.
+   * @param timeoutMillis How long to wait before auto-select.
+   * @returns Promise resolving to tuple of two UUIDs.
+   */
   async askTwoCards(
     player: Player,
     timeoutMillis = 1000000,
   ): Promise<[string, string]> {
-    const all = player.getCards();
+    const all = player.getCardsClone();
 
     const options = all.map((card) => ({ label: card.variant, value: card.uuid }));
 
@@ -118,6 +159,13 @@ export class PromptService {
     });
   }
 
+  /**
+   * Challenge a single player with accept/pass options.
+   * @param target Target socket.
+   * @param message Prompt text.
+   * @param timeoutMillis Timeout before default.
+   * @returns Promise resolving to the selected challenge option.
+   */
   async challengePlayer(
     target: Socket,
     message: string,
@@ -128,14 +176,19 @@ export class PromptService {
       { label: 'Passar', value: PROMPT_OPTION_CHALLENGE_PASS },
     ];
     const defaultVal = PROMPT_OPTION_CHALLENGE_PASS;
-
     this.emitToPlayer(target, message, options, PromptVariant.CHALLENGE, timeoutMillis);
-
     const response = await this.waitForResponse(target, defaultVal, timeoutMillis);
-
     return response as typeof PROMPT_OPTION_CHALLENGE_ACCEPT | typeof PROMPT_OPTION_CHALLENGE_PASS;
   }
 
+  /**
+   * Broadcast a challenge to all other players and resolve on first accept or all pass.
+   * @param sender Socket initiating the challenge.
+   * @param playersCount Number of players in game.
+   * @param message Prompt text.
+   * @param timeoutMillis Timeout before resolving all-pass.
+   * @returns Promise with challenger ID and chosen option.
+   */
   async challengeOthers(
     sender: Socket,
     playersCount: number,
@@ -152,11 +205,7 @@ export class PromptService {
     return new Promise((resolve) => {
       let ignored = 0;
 
-      const timer = setTimeout(() => {
-        sender.broadcast.emit(CLEAR_PROMPT);
-
-        resolve({ challengerId: '', response: PROMPT_OPTION_CHALLENGE_PASS });
-      }, timeoutMillis);
+      const timer = setTimeout(() => resolve({ challengerId: '', response: PROMPT_OPTION_CHALLENGE_PASS }), timeoutMillis);
 
       onceEverySocketExceptOne({
         namespace: this.namespace,
@@ -164,19 +213,15 @@ export class PromptService {
         excludeSocketId: sender.id,
         callback: (data, id) => {
           const resp = data as PROMPT_OPTION_VALUE;
-
+          console.log(`Challenge response: ${resp}`)
           if (resp === PROMPT_OPTION_CHALLENGE_PASS) {
             ignored += 1;
-
             if (ignored === playersCount - 1) {
               clearTimeout(timer);
               resolve({ challengerId: '', response: resp });
             }
           } else {
             clearTimeout(timer);
-
-            sender.broadcast.emit(CLEAR_PROMPT);
-
             resolve({ challengerId: id, response: resp });
           }
         },
@@ -184,6 +229,16 @@ export class PromptService {
     });
   }
 
+  /**
+   * Emit a prompt to a target socket and await their response, with optional timeout/default.
+   * @param target Target socket to send the prompt.
+   * @param message Prompt text.
+   * @param options Choice options.
+   * @param variant Optional client rendering variant.
+   * @param defaultValue Fallback value if timeout occurs (defaults to first option).
+   * @param timeoutMillis Timeout in milliseconds before resolving with default.
+   * @returns Promise resolving to the chosen option value as string.
+   */
   async prompt(
     target: Socket,
     message: string,

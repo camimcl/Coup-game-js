@@ -1,9 +1,9 @@
-import Case from './Case.ts';
+import BaseCase from './BaseCase.ts';
 import { PROMPT_OPTION_CHALLENGE_ACCEPT } from '../constants/promptOptions.ts';
 import { CARD_VARIANT_AMBASSADOR } from '../constants/cardVariants.ts';
 import GameState from '../core/GameState.ts';
 
-export default class AmbassadorCase extends Case {
+export default class AmbassadorCase extends BaseCase {
   constructor(gameState: GameState) {
     super('Embassador', gameState);
   }
@@ -38,6 +38,7 @@ export default class AmbassadorCase extends Case {
 
     const revealedCard = this.currentPlayer.getCardByUUID(revealedUUID);
 
+    // Check if the revealed card is the ambassador
     if (revealedCard.variant !== CARD_VARIANT_AMBASSADOR) {
       this.gameState.discardPlayerCard(revealedUUID, this.currentPlayer);
 
@@ -56,21 +57,26 @@ export default class AmbassadorCase extends Case {
   }
 
   private async performExchange() {
-    this.gameState.drawCardForPlayer(this.currentPlayer);
-    this.gameState.drawCardForPlayer(this.currentPlayer);
+    // draw two cards from the deck
+    const drawn1 = this.gameState.getDeck().draw();
+    const drawn2 = this.gameState.getDeck().draw();
+
+    // add the cards to the player
+    this.currentPlayer.addCard(drawn1);
+    this.currentPlayer.addCard(drawn2);
 
     // colect all the actual cards after the draw
-    const cards = this.currentPlayer.getCards();
+    const totalCards = this.currentPlayer.getCardsClone();
 
     // keep the choosen cards
     const keptCardsUUIDs = await this.promptService.askTwoCards(this.currentPlayer);
 
     // remove the cards that were not kept
-    cards.forEach((card) => {
+    totalCards.forEach((card) => {
       if (!keptCardsUUIDs.includes(card.uuid)) {
         this.currentPlayer.removeCardByUUID(card.uuid);
 
-        this.gameState.placeCardIntoDeck(card);
+        this.gameState.getDeck().pushAndShuffle(card);
       }
     });
   }

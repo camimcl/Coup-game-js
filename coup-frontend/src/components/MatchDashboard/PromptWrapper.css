@@ -1,0 +1,310 @@
+@import url('https://fonts.googleapis.com/css2?family=Creepster&family=Bungee:wght@400;700&display=swap');
+
+:root {
+  --coup-yellow: #FDD835;
+  --coup-red: #C62828;
+  --coup-blue: #1976D2;
+  --coup-green: #388E3C;
+  --coup-purple: #7B1FA2;
+  --coup-orange: #FF8F00;
+  --coup-brown: #8D6E63;
+  --coup-black: #212121;
+  --coup-white: #FFF8E1;
+  --coup-cream: #FFF3C4;
+  --coup-shadow: rgba(0,0,0,0.4);
+  --coup-glow: rgba(253, 216, 53, 0.6);
+}
+
+.prompt-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+  animation: fadeIn 0.3s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.prompt-card {
+  background: var(--coup-white);
+  border: 5px solid var(--coup-black);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 320px;
+  padding: 20px;
+  position: relative;
+  box-shadow: 
+    0 0 0 3px var(--coup-yellow),
+    0 0 0 6px var(--coup-red),
+    0 10px 20px var(--coup-shadow);
+  transform: scale(0.9);
+  animation: cardPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes cardPop {
+  from { transform: scale(0.9); }
+  to { transform: scale(1); }
+}
+
+.prompt-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+
+.prompt-icon {
+  font-size: 1.8em;
+  margin-right: 10px;
+  animation: iconBounce 1s ease-in-out infinite;
+}
+
+@keyframes iconBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.prompt-title {
+  font-family: 'Creepster', cursive;
+  font-size: 1.5em;
+  color: var(--coup-red);
+  margin: 0;
+  text-shadow: 
+    2px 2px 0 var(--coup-black),
+    3px 3px 0 var(--coup-shadow);
+}
+
+.card-decorations {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.decoration {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: var(--coup-yellow);
+  transform: rotate(45deg);
+  border: 2px solid var(--coup-black);
+}
+
+.corner-tl { top: -6px; left: -6px; }
+.corner-tr { top: -6px; right: -6px; }
+.corner-bl { bottom: -6px; left: -6px; }
+.corner-br { bottom: -6px; right: -6px; }
+
+.prompt-message {
+  font-family: 'Bungee', cursive;
+  font-size: 1em;
+  color: var(--coup-black);
+  text-align: center;
+  margin-bottom: 20px;
+  padding: 0 5px;
+  line-height: 1.4;
+}
+
+.timer-container {
+  height: 6px;
+  background: rgba(0,0,0,0.1);
+  border-radius: 3px;
+  margin-bottom: 15px;
+  overflow: hidden;
+}
+
+.timer-progress {
+  height: 100%;
+  background: linear-gradient(90deg, var(--coup-green), var(--coup-yellow));
+  width: 100%;
+  border-radius: 3px;
+  transition: width 0.1s linear;
+}
+
+.prompt-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.prompt-button {
+  background: linear-gradient(to bottom, var(--coup-blue) 0%, var(--coup-blue) 85%, #0D47A1 100%);
+  border: 3px solid var(--coup-black);
+  color: var(--coup-white);
+  font-family: 'Bungee', cursive;
+  font-size: 0.9em;
+  font-weight: bold;
+  padding: 10px 15px;
+  border-radius: 10px;
+  text-align: center;
+  position: relative;
+  cursor: pointer;
+  box-shadow: 0 4px 0 var(--coup-shadow);
+  transform: translateY(0);
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.prompt-button:hover, .prompt-button:focus {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 var(--coup-shadow);
+  background: linear-gradient(to bottom, #2196F3 0%, var(--coup-blue) 100%);
+}
+
+.prompt-button:active, .prompt-button.active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 var(--coup-shadow);
+}
+
+.button-text {
+  position: relative;
+  z-index: 2;
+  text-shadow: 1px 1px 0 var(--coup-black);
+}
+
+.button-shine {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,0.3),
+    transparent
+  );
+  animation: buttonShine 3s ease-in-out infinite;
+}
+
+@keyframes buttonShine {
+  0% { left: -100%; }
+  20%, 100% { left: 100%; }
+}
+
+.prompt-checkbox-option {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(0,0,0,0.05);
+  border: 2px solid var(--coup-black);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.prompt-checkbox-option:hover {
+  background: rgba(0,0,0,0.1);
+}
+
+.prompt-checkbox-option.selected {
+  background: rgba(var(--coup-green), 0.2);
+  border-color: var(--coup-green);
+}
+
+.checkbox-input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkbox-custom {
+  position: relative;
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  background: var(--coup-white);
+  border: 2px solid var(--coup-black);
+  border-radius: 4px;
+  margin-right: 10px;
+  vertical-align: middle;
+}
+
+.prompt-checkbox-option.selected .checkbox-custom::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 5px;
+  width: 5px;
+  height: 10px;
+  border: solid var(--coup-green);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.option-label {
+  font-family: 'Bungee', cursive;
+  font-size: 0.9em;
+  color: var(--coup-black);
+}
+
+.confirm-button {
+  background: linear-gradient(to bottom, var(--coup-green) 0%, var(--coup-green) 85%, #2E7D32 100%);
+  border: 3px solid var(--coup-black);
+  color: var(--coup-white);
+  font-family: 'Bungee', cursive;
+  font-size: 1em;
+  font-weight: bold;
+  padding: 12px 20px;
+  border-radius: 10px;
+  margin-top: 5px;
+  text-align: center;
+  position: relative;
+  cursor: pointer;
+  box-shadow: 0 4px 0 var(--coup-shadow);
+  transform: translateY(0);
+  transition: all 0.2s ease;
+  overflow: hidden;
+  width: 100%;
+}
+
+.confirm-button:hover:not(.disabled), 
+.confirm-button:focus:not(.disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 var(--coup-shadow);
+  background: linear-gradient(to bottom, #4CAF50 0%, var(--coup-green) 100%);
+}
+
+.confirm-button:active:not(.disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 var(--coup-shadow);
+}
+
+.confirm-button.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .prompt-card {
+    max-width: 300px;
+    padding: 15px;
+  }
+  
+  .prompt-title {
+    font-size: 1.3em;
+  }
+  
+  .prompt-message {
+    font-size: 0.9em;
+  }
+  
+  .prompt-button, .confirm-button {
+    padding: 8px 15px;
+  }
+}

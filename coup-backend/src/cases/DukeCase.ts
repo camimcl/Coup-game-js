@@ -2,10 +2,10 @@
 import { PROMPT_OPTION_CHALLENGE_ACCEPT } from '../constants/promptOptions.ts';
 import { CARD_VARIANT_DUKE } from '../constants/cardVariants.ts';
 import Player from '../core/entities/Player.ts';
-import Case from './Case.ts';
+import BaseCase from './BaseCase.ts';
 import GameState from '../core/GameState.ts';
 
-export default class DukeCase extends Case {
+export default class DukeCase extends BaseCase {
   private challengerPlayer: Player | null = null;
 
   constructor(gameState: GameState) {

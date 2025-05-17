@@ -3,7 +3,7 @@ import { CARD_VARIANT_AMBASSADOR, CARD_VARIANT_CAPTAIN } from '../constants/card
 import { PROMPT_OPTION_CHALLENGE_ACCEPT, PROMPT_OPTION_CHALLENGE_PASS } from '../constants/promptOptions.ts';
 import Player from '../core/entities/Player.ts';
 import GameState from '../core/GameState.ts';
-import Case from './Case.ts';
+import BaseCase from './BaseCase.ts';
 
 const DEFENSE_RESPONSE_ACCEPT = 'ACCEPT';
 const DEFENSE_RESPONSE_BLOCK_AS_CAPTAIN = 'BLOCK_AS_CAPTAIN';
@@ -14,7 +14,8 @@ type DEFENSE_RESPONSE = typeof PROMPT_OPTION_CHALLENGE_ACCEPT
   | typeof DEFENSE_RESPONSE_BLOCK_AS_CAPTAIN
   | typeof DEFENSE_RESPONSE_BLOCK_AS_EMBASSADOR;
 
-export default class CaptainCase extends Case {
+export default class CaptainCase extends BaseCase {
+  /** The player being targeted to be robbed. */
   private targetPlayer!: Player;
 
   constructor(gameState: GameState) {
@@ -27,6 +28,7 @@ export default class CaptainCase extends Case {
     return players.some((p) => p.getCoinsAmount() >= 2) && super.canExecute();
   }
 
+  // Assumes at least one target has two or more coins
   public async runCase() {
     this.currentPlayer = this.gameState.getCurrentTurnPlayer();
 
@@ -104,6 +106,9 @@ export default class CaptainCase extends Case {
     this.gameState.discardPlayerCard(chosenCardUUID, this.targetPlayer);
   }
 
+  /**
+    * Prompts the current player to select a target.
+  */
   private async promptChooseTarget(): Promise<void> {
     const options = this.gameState
       .getActivePlayers()
@@ -130,6 +135,11 @@ export default class CaptainCase extends Case {
     console.debug(`Chosen target: ${target.name}`);
   }
 
+  /**
+  * Asks the target player whether they accept the robery, defend with Captain or Embassador,
+  * or contest the current player.
+  * Returns 'ACCEPT' if they accept, or 'BLOCK' if they claim Condessa.
+  */
   private async promptTargetDefense(): Promise<DEFENSE_RESPONSE> {
     const options = [
       { label: 'Aceitar roubo', value: DEFENSE_RESPONSE_ACCEPT },

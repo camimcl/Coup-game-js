@@ -1,26 +1,30 @@
-/* eslint-disable no-console */
 import { Namespace, Server } from 'socket.io';
 import EventEmitter from 'events';
 import Player from './entities/Player.ts';
 import GameState from './GameState.ts';
 import { GAME_START, MATCH_STATE_UPDATE, PLAYER_COUNT_UPDATE } from '../constants/events.ts';
 
-const MINIMUM_NUMBER_OF_PLAYERS = 4;
-const MAXIMUM_NUMBER_OF_PLAYERS = 8;
-
+/**
+ * Manages a single game match: its players, state, and Socket.IO namespace.
+ */
 export default class Match {
+  /** Unique identifier for this match. */
   private uuid: string;
 
+  /** Players currently in the match. */
   private players: Player[];
 
+  /** Indicates whether the match has ended. */
   private hasEnded: boolean = false;
 
   private inProgress: boolean = false;
 
+  /** The winning player, if the match has concluded. */
   private winner: Player | null = null;
 
   private hostUUID: string;
 
+  /** The game state manager for this match. */
   private gameState: GameState;
 
   /** Socket.IO namespace dedicated to this match. */
@@ -28,6 +32,12 @@ export default class Match {
 
   readonly internalBus: EventEmitter;
 
+  /**
+   * Creates a new Match.
+   *
+   * @param players - Initial list of players in the match.
+   * @param server  - Socket.IO server instance to create a namespace on.
+   */
   constructor(internalBus: EventEmitter, players: Player[], server: Server) {
     this.players = players;
     this.uuid = '123'; // TODO: replace with real UUID generation
@@ -39,18 +49,11 @@ export default class Match {
 
   public startMatch() {
     if (this.inProgress) {
-      console.debug(`Match ${this.uuid} is already is progress`);
-
+      console.log('Already in progress');
       return;
     }
 
-    if (this.players.length < MINIMUM_NUMBER_OF_PLAYERS) {
-      console.debug(`Cannot start match ${this.uuid}: not enough players`);
-
-      return;
-    }
-
-    console.debug(`Starting match ${this.uuid}`);
+    console.debug(`Starting match: ${this.uuid}`);
 
     this.gameState.startGame();
 
@@ -63,32 +66,43 @@ export default class Match {
     this.emitMatchState();
   }
 
-  addPlayer(player: Player) {
-    // TODO: send events to the client saying it's not possible to join this match
+  /**
+   * Adds a player to the match.
+   *
+   * @param player - The player to add.
+   * @throws If the match has already ended.
+   */
+  addPlayer(player: Player): void {
     if (this.hasEnded) {
-      console.warn('Cannot add player: match has already ended.');
+      throw new Error('Cannot add player: match has already ended.');
     }
-
-    if (this.inProgress) {
-      console.warn('Cannot add player: match is already in progress. No new players allowed.');
-    }
-
     this.players.push(player);
     this.hostUUID = this.players[0].uuid;
 
     this.gameState.broadcastState();
     this.namespace.emit(PLAYER_COUNT_UPDATE, this.players.length);
-
     this.emitMatchState();
   }
 
+  /**
+   * Removes a player from the match by their UUID.
+   *
+   * @param uuid - UUID of the player to remove.
+   */
   removePlayer(uuid: string): void {
+    this.namespace.emit(MATCH_STATE_UPDATE, this.toJSONObject());
+
     this.gameState.removePlayer(uuid);
     this.hostUUID = this.players[0]?.uuid || '';
 
     this.emitMatchState();
   }
 
+  /**
+   * Retrieves the unique identifier for this match.
+   *
+   * @returns The match UUID.
+   */
   getUUID(): string {
     return this.uuid;
   }
@@ -100,21 +114,27 @@ export default class Match {
   toJSONObject() {
     return {
       uuid: this.uuid,
-      players: this.players.map((p) => p.getPublicProfile()),
+      players: this.players.map((p) => p.publicProfile()),
       hostUUID: this.hostUUID,
       inProgress: this.inProgress,
     };
   }
 
+  /**
+   * Retrieves the Socket.IO namespace for this match.
+   *
+   * @returns The Namespace instance.
+   */
   getNamespace(): Namespace {
     return this.namespace;
   }
 
+  /**
+   * Retrieves the current game state manager.
+   *
+   * @returns The GameState instance.
+   */
   getGameState(): GameState {
     return this.gameState;
-  }
-
-  isInProgress(): boolean {
-    return this.inProgress;
   }
 }
