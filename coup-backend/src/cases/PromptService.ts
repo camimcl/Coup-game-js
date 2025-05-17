@@ -110,7 +110,7 @@ export class PromptService {
     variant: PromptVariant = PromptVariant.CARDS_CHOICE,
     timeoutMillis = 1000000,
   ): Promise<string> {
-    const options = player.getCardsClone().map((card) => ({
+    const options = player.getCards().map((card) => ({
       label: card.variant,
       value: card.uuid,
     }));
@@ -132,7 +132,7 @@ export class PromptService {
     player: Player,
     timeoutMillis = 1000000,
   ): Promise<[string, string]> {
-    const all = player.getCardsClone();
+    const all = player.getCards();
 
     const options = all.map((card) => ({ label: card.variant, value: card.uuid }));
 

@@ -16,19 +16,9 @@ const CARD_VARIANTS: CardVariant[] = [
   CARD_VARIANT_CONDESSA,
 ];
 
-/**
- * A standard deck of cards supporting shuffle, draw, and insertion operations.
- */
 export default class Deck {
-  /** Internal array storing the cards in the deck. */
   private cards: Card[] = [];
 
-  /**
-   * Constructs a new deck.
-   *
-   * @param playersAmount - Number of players (use to determine initial card distribution).
-   *
-   */
   constructor(playersAmount: number) {
     const copiesPerVariant = playersAmount <= 5 ? 3 : 4;
 
@@ -48,9 +38,12 @@ export default class Deck {
    */
   public shuffle(): void {
     let currentIndex = this.cards.length;
+
     while (currentIndex !== 0) {
       const randomIndex = Math.floor(Math.random() * currentIndex);
+
       currentIndex -= 1;
+
       [this.cards[currentIndex], this.cards[randomIndex]] = [
         this.cards[randomIndex],
         this.cards[currentIndex],
@@ -58,40 +51,20 @@ export default class Deck {
     }
   }
 
-  /**
-   * Draws (removes and returns) the top card of the deck.
-   *
-   * @returns The drawn Card, or `null` if the deck is empty.
-   */
   public draw(): Card {
     const card = this.cards.shift();
+
     if (!card) throw new Error('No cards left in the deck');
+
     return card;
   }
 
-  /**
-   * Adds a single card to deck and shuffles it.
-   *
-   * @param card - The Card to add.
-   */
   public pushAndShuffle(card: Card): void {
     this.cards.push(card);
 
     this.shuffle();
   }
 
-  /**
-   * Adds a single card to the bottom of the deck.
-   *
-   * @param card - The Card to add.
-   */
-  public push(card: Card): void {
-    this.cards.push(card);
-  }
-
-  /**
-   * @returns The current number of cards remaining in the deck.
-   */
   public size(): number {
     return this.cards.length;
   }

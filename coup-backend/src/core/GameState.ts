@@ -11,39 +11,23 @@ import {
   PLAYER_ELIMINATED,
 } from '../constants/events.ts';
 
-/**
- * Manages the full state of a match:
- */
 export default class GameState {
-  /** Index of the player whose turn it is. */
   private currentTurnPlayerIndex: number = 0;
 
-  /** Shared deck of cards to draw from or discard into. */
   private deck: Deck;
 
   private knownCards: Card[] = [];
-  /** Cards that have been discarded. */
 
-  /** Players still active in the match. */
   private players: Player[];
 
-  /** Players who have been eliminated. */
   private eliminatedPlayers: Player[] = [];
 
-  /** Unique match identifier (used for the Socket.IO namespace). */
   public readonly uuid: string;
 
-  /** Socket.IO namespace for broadcasting game-state events. */
   private readonly namespace: Namespace;
 
   private readonly internalBus: EventEmitter;
 
-  /**
-   * Initializes a new game state.
-   *
-   * @param namespace - Namespace for emitting state updates.
-   * @param players   - Starting list of players.
-   */
   constructor(internalBus: EventEmitter, namespace: Namespace, players: Player[]) {
     this.namespace = namespace;
     this.players = players;
@@ -52,13 +36,6 @@ export default class GameState {
     this.internalBus = internalBus;
   }
 
-  /**
-   * Discards a card from the given player into the deck.
-   * Eliminates the player if they have no cards left.
-   *
-   * @param cardUUID - UUID of the card to discard.
-   * @param player   - Player who is discarding.
-   */
   public discardPlayerCard(cardUUID: string, player: Player): void {
     const discarded = player.removeCardByUUID(cardUUID);
 
@@ -66,11 +43,8 @@ export default class GameState {
 
     player.socket.emit(CARD_DISCARDED, discarded);
 
-    if (player.getCardsClone().length === 0) {
+    if (player.getCards().length === 0) {
       this.eliminatePlayer(player.uuid);
-
-      // Warns every one that this player has died
-      // this.namespace.emit(PLAYER_DEATH, { playerId: player.uuid });
     }
 
     this.broadcastState();
@@ -82,10 +56,6 @@ export default class GameState {
     this.broadcastState();
   }
 
-  /**
-   * Advances turn to the next active player (wraps around),
-   * and resets the target to that player by default.
-   */
   public goToNextTurn(): void {
     if (this.players.length === 0) return;
 
@@ -105,15 +75,10 @@ export default class GameState {
 
     this.internalBus.emit(TURN_START);
 
+    this.namespace.emit(TURN_START);
+
     this.broadcastState();
   }
-
-  /**
-   * Draws one card from the deck and gives it to the specified player.
-   *
-   * @param player - Player who will receive the drawn card.
-   * @returns The drawn card, or null if the deck is empty.
-   */
 
   public drawCardForPlayer(player: Player): Card | null {
     const card = this.deck.draw();
@@ -151,12 +116,6 @@ export default class GameState {
     );
   }
 
-  /**
-   * Eliminates a player by UUID, moving them to the eliminated list
-   * and removing them from active players.
-   *
-   * @param uuid - UUID of the player to eliminate.
-   */
   public eliminatePlayer(uuid: string): void {
     const [player] = this.players.filter((p) => p.uuid === uuid);
 
@@ -189,10 +148,8 @@ export default class GameState {
 
     const removedPlayer = this.players.splice(index, 1);
 
-    removedPlayer[0]?.getCardsClone().forEach((card) => this.deck.push(card));
+    removedPlayer[0]?.getCards().forEach((card) => this.deck.pushAndShuffle(card));
 
-    // If the current player is leaving the match,
-    // start a new turn
     if (index === this.currentTurnPlayerIndex) {
       // We need to go back one index so the method
       // this.goToNextTurn() sets the right value to it
@@ -204,12 +161,6 @@ export default class GameState {
     }
   }
 
-  /**
-   * Deals an initial hand to every player from the deck.
-   * Assumes Deck was initialized with enough cards.
-   *
-   * @param handSize - Number of cards per player (default: 2).
-   */
   private dealInitialHands(handSize: number = 2): void {
     const totalCardsNeeded = this.players.length * handSize;
 
@@ -225,41 +176,29 @@ export default class GameState {
     this.broadcastState();
   }
 
-  /** @returns The player whose turn it is now. */
   public getCurrentTurnPlayer(): Player {
     return this.players[this.currentTurnPlayerIndex];
   }
 
-  /** @returns All active players. */
   public getActivePlayers(): Player[] {
     return [...this.players];
   }
 
-  /** @returns Total number of active players. */
-  public getPlayersCount(): number {
-    return this.players.length;
-  }
-
-  /**
-   * Broadcasts the full game state over the namespace.
-   */
   public broadcastState(): void {
     this.namespace.emit(GAME_STATE_UPDATE, {
       uuid: this.uuid,
-      players: this.players.map((p) => p.publicProfile()),
-      eliminated: this.eliminatedPlayers.map((p) => p.publicProfile()),
+      players: this.players.map((p) => p.getPublicProfile()),
+      eliminated: this.eliminatedPlayers.map((p) => p.getPublicProfile()),
       currentTurnPlayer: this.getCurrentTurnPlayer()?.uuid,
       deckSize: this.deck.size(),
       knownCards: this.knownCards,
     });
   }
 
-  /** @returns The match namespace. */
   public getNamespace() {
     return this.namespace;
   }
 
-  /** @returns Returns the player with UUID. */
   public getPlayerByUUID(uuid: string) {
     return this.players.filter((player) => player.uuid === uuid)[0];
   }

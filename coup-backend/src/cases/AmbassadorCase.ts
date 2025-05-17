@@ -38,7 +38,6 @@ export default class AmbassadorCase extends BaseCase {
 
     const revealedCard = this.currentPlayer.getCardByUUID(revealedUUID);
 
-    // Check if the revealed card is the ambassador
     if (revealedCard.variant !== CARD_VARIANT_AMBASSADOR) {
       this.gameState.discardPlayerCard(revealedUUID, this.currentPlayer);
 
@@ -61,7 +60,7 @@ export default class AmbassadorCase extends BaseCase {
     this.gameState.drawCardForPlayer(this.currentPlayer);
 
     // colect all the actual cards after the draw
-    const cards = this.currentPlayer.getCardsClone();
+    const cards = this.currentPlayer.getCards();
 
     // keep the choosen cards
     const keptCardsUUIDs = await this.promptService.askTwoCards(this.currentPlayer);
