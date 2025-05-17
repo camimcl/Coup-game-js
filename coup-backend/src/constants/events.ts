@@ -150,6 +150,8 @@ export const TURN_START = 'TURN_START';
  */
 export const PLACE_CARD_INTO_DECK = 'PLACE_CARD_INTO_DECK';
 
+export const PLAYER_DEATH = 'PLAYER_DEATH'
+
 /**
  * Used to let everyone know that a player's count changed.
  */

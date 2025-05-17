@@ -161,4 +161,12 @@ export default class Player {
       cards: this.cards
     };
   }
+
+  /**
+   * Checks if the player is alive (has cards left).
+   * @returns True if the player has cards, false otherwise.
+   */
+  public isAlive(): boolean {
+    return this.cards.length > 0;
+  }
 }
