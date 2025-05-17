@@ -145,4 +145,8 @@ export default class Match {
   getGameState(): GameState {
     return this.gameState;
   }
+
+  isInProgress(): boolean {
+    return this.inProgress;
+  }
 }

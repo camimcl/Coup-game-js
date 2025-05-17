@@ -43,10 +43,13 @@ export default function initializeNamespace(
     const username = (socket.handshake.auth.username || socket.id) as string;
 
     // Check if the match is already in progress
-    if (match.getGameState().getPlayersCount() > 0 && match['inProgress']) {
+    if (match.getGameState().getPlayersCount() > 0 && match.isInProgress()) {
       console.warn(`Player ${username} tried to join an ongoing match.`);
+
       socket.emit('error', { message: 'Cannot join: match is already in progress.' });
+
       socket.disconnect();
+
       return;
     }
 
@@ -68,7 +71,6 @@ export default function initializeNamespace(
     const player = match.getGameState().getCurrentTurnPlayer();
 
     const intervalId = setInterval(() => {
-      //console.log(`Asking ${player.name} what they want to do`);
       promptService.emitToPlayer(
         player.socket,
         'O que deseja fazer',
