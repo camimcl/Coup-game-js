@@ -1,9 +1,9 @@
-import BaseCase from './BaseCase.ts';
+import Case from './Case.ts';
 import { PROMPT_OPTION_CHALLENGE_ACCEPT } from '../constants/promptOptions.ts';
 import { CARD_VARIANT_AMBASSADOR } from '../constants/cardVariants.ts';
 import GameState from '../core/GameState.ts';
 
-export default class AmbassadorCase extends BaseCase {
+export default class AmbassadorCase extends Case {
   constructor(gameState: GameState) {
     super('Embassador', gameState);
   }

@@ -3,7 +3,7 @@ import { CARD_VARIANT_AMBASSADOR, CARD_VARIANT_CAPTAIN } from '../constants/card
 import { PROMPT_OPTION_CHALLENGE_ACCEPT, PROMPT_OPTION_CHALLENGE_PASS } from '../constants/promptOptions.ts';
 import Player from '../core/entities/Player.ts';
 import GameState from '../core/GameState.ts';
-import BaseCase from './BaseCase.ts';
+import Case from './Case.ts';
 
 const DEFENSE_RESPONSE_ACCEPT = 'ACCEPT';
 const DEFENSE_RESPONSE_BLOCK_AS_CAPTAIN = 'BLOCK_AS_CAPTAIN';
@@ -14,7 +14,7 @@ type DEFENSE_RESPONSE = typeof PROMPT_OPTION_CHALLENGE_ACCEPT
   | typeof DEFENSE_RESPONSE_BLOCK_AS_CAPTAIN
   | typeof DEFENSE_RESPONSE_BLOCK_AS_EMBASSADOR;
 
-export default class CaptainCase extends BaseCase {
+export default class CaptainCase extends Case {
   private targetPlayer!: Player;
 
   constructor(gameState: GameState) {

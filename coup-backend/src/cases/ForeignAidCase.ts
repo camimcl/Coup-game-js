@@ -1,11 +1,11 @@
 /* eslint-disable no-console */
 import { PROMPT_OPTION_CHALLENGE_ACCEPT } from '../constants/promptOptions.ts';
 import { CARD_VARIANT_DUKE } from '../constants/cardVariants.ts';
-import BaseCase from './BaseCase.ts';
+import Case from './Case.ts';
 import Player from '../core/entities/Player.ts';
 import GameState from '../core/GameState.ts';
 
-export default class ForeignAidCase extends BaseCase {
+export default class ForeignAidCase extends Case {
   private challengerPlayer!: Player;
 
   constructor(gameState: GameState) {

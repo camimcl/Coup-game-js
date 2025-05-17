@@ -1,11 +1,11 @@
 /* eslint-disable no-console */
-import BaseCase from './BaseCase.ts';
+import Case from './Case.ts';
 import Player from '../core/entities/Player.ts';
 import { CARD_VARIANT_ASSASSIN, CARD_VARIANT_CONDESSA } from '../constants/cardVariants.ts';
 import { PROMPT_OPTION_CHALLENGE_ACCEPT, PROMPT_OPTION_CHALLENGE_PASS } from '../constants/promptOptions.ts';
 import GameState from '../core/GameState.ts';
 
-export default class AssassinCase extends BaseCase {
+export default class AssassinCase extends Case {
   private targetPlayer!: Player;
 
   constructor(gameState: GameState) {

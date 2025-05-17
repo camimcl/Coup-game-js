@@ -11,7 +11,7 @@ import Match from './core/Match.ts';
 import {
   GAME_START, MESSAGE, TURN_START, PROMPT_RESPONSE,
 } from './constants/events.ts';
-import BaseCase from './cases/BaseCase.ts';
+import Case from './cases/Case.ts';
 import { PromptOption, PromptService } from './services/PromptService.ts';
 
 export default function initializeNamespace(
@@ -29,7 +29,7 @@ export default function initializeNamespace(
   const foreignAidCase = new ForeignAidCase(gameState);
   const captainCase = new CaptainCase(gameState);
 
-  const cases: { [key: string]: BaseCase } = {
+  const cases: { [key: string]: Case } = {
     [assassinCase.getCaseName()]: assassinCase,
     [dukeCase.getCaseName()]: dukeCase,
     [incomeCase.getCaseName()]: incomeCase,

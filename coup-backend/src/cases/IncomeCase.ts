@@ -1,8 +1,8 @@
 /* eslint-disable no-console */
 import GameState from '../core/GameState.ts';
-import BaseCase from './BaseCase.ts';
+import Case from './Case.ts';
 
-export default class IncomeCase extends BaseCase {
+export default class IncomeCase extends Case {
   constructor(gameState: GameState) {
     super('Income', gameState);
   }
