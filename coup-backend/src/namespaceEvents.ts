@@ -10,6 +10,7 @@ import Player from './core/entities/Player.ts';
 import Match from './core/Match.ts';
 import {
   GAME_START, MESSAGE, TURN_START, PROMPT_RESPONSE,
+  ERROR,
 } from './constants/events.ts';
 import Case from './cases/Case.ts';
 import { PromptOption, PromptService } from './services/PromptService.ts';
@@ -45,7 +46,7 @@ export default function initializeNamespace(
     if (match.isInProgress()) {
       console.warn(`Player ${username} tried to join an ongoing match.`);
 
-      socket.emit('error', { message: 'Cannot join: match is already in progress.' });
+      socket.emit(ERROR, { message: 'Cannot join: match is already in progress.' });
 
       socket.disconnect();
 
