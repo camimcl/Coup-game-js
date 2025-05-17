@@ -1,8 +1,12 @@
+/* eslint-disable no-console */
 import { Namespace, Server } from 'socket.io';
 import EventEmitter from 'events';
 import Player from './entities/Player.ts';
 import GameState from './GameState.ts';
 import { GAME_START, MATCH_STATE_UPDATE, PLAYER_COUNT_UPDATE } from '../constants/events.ts';
+
+const MINIMUM_NUMBER_OF_PLAYERS = 4;
+const MAXIMUM_NUMBER_OF_PLAYERS = 8;
 
 /**
  * Manages a single game match: its players, state, and Socket.IO namespace.
@@ -49,11 +53,18 @@ export default class Match {
 
   public startMatch() {
     if (this.inProgress) {
-      console.log('Already in progress');
+      console.debug(`Match ${this.uuid} is already is progress`);
+
       return;
     }
 
-    console.debug(`Starting match: ${this.uuid}`);
+    if (this.players.length < MINIMUM_NUMBER_OF_PLAYERS) {
+      console.debug(`Cannot start match ${this.uuid}: not enough players`);
+
+      return;
+    }
+
+    console.debug(`Starting match ${this.uuid}`);
 
     this.gameState.startGame();
 
@@ -92,6 +103,7 @@ export default class Match {
 
     return true; // Indicate success in adding player
   }
+
   /**
    * Removes a player from the match by their UUID.
    *

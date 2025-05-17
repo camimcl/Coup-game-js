@@ -43,7 +43,7 @@ export default function initializeNamespace(
     const username = (socket.handshake.auth.username || socket.id) as string;
 
     // Check if the match is already in progress
-    if (match.getGameState().getPlayersCount() > 0 && match.isInProgress()) {
+    if (match.isInProgress()) {
       console.warn(`Player ${username} tried to join an ongoing match.`);
 
       socket.emit('error', { message: 'Cannot join: match is already in progress.' });
