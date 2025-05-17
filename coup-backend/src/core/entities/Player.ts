@@ -39,6 +39,8 @@ export default class Player {
 
     this.socket.emit(CARD_DISCARDED, removed);
 
+    this.socket.emit(PRIVATE_PLAYER_INFO_UPDATE, this.getPrivateProfile());
+
     return removed;
   }
 
@@ -46,6 +48,8 @@ export default class Player {
     this.cards.push(card);
 
     this.socket.emit(CARD_DRAW, card);
+
+    this.socket.emit(PRIVATE_PLAYER_INFO_UPDATE, this.getPrivateProfile());
   }
 
   public getCards(): Card[] {
@@ -58,6 +62,8 @@ export default class Player {
 
   public addCoins(amount: number): void {
     this.coins += amount;
+
+    this.socket.emit(PRIVATE_PLAYER_INFO_UPDATE, this.getPrivateProfile());
   }
 
   public removeCoins(amount: number): void {
@@ -99,5 +105,4 @@ export default class Player {
       cards: this.cards,
     };
   }
-
 }

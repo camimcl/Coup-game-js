@@ -1,10 +1,10 @@
-// src/components/MatchDashboard/PromptWrapper.tsx
 import React, { useEffect, useState, useCallback } from 'react';
 import { useSocketContext } from '../../contexts/SocketProvider';
-import { PROMPT, PROMPT_RESPONSE } from '../../events';
+import { CLEAR_PROMPT, PROMPT, PROMPT_RESPONSE } from '../../events';
+import { useGameState } from '../../contexts/GameStateProvider';
 
 export const PROMPT_OPTION_CHALLENGE_ACCEPT = 'PROMPT_OPTION_CHALLENGE_ACCEPT';
-export const PROMPT_OPTION_CHALLENGE_PASS   = 'PROMPT_OPTION_CHALLENGE_PASS';
+export const PROMPT_OPTION_CHALLENGE_PASS = 'PROMPT_OPTION_CHALLENGE_PASS';
 
 export type PROMPT_OPTION_VALUE =
   typeof PROMPT_OPTION_CHALLENGE_ACCEPT |
@@ -29,11 +29,11 @@ interface PromptData {
 }
 
 const PromptWrapper: React.FC = () => {
+  const { gameState } = useGameState();
   const { socket } = useSocketContext();
   const [prompt, setPrompt] = useState<PromptData | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
 
-  // Listen for new prompts
   useEffect(() => {
     if (!socket) return;
     const onPrompt = (data: PromptData) => {
@@ -41,18 +41,23 @@ const PromptWrapper: React.FC = () => {
       setSelected([]);
     };
     socket.on(PROMPT, onPrompt);
+
+    socket.on(CLEAR_PROMPT, () => setPrompt(null))
+
     return () => { socket.off(PROMPT, onPrompt); };
   }, [socket]);
 
-  // Auto-clear if expiration is defined
   useEffect(() => {
     if (!prompt || prompt.expiration == null) return;
+
     const timer = setTimeout(() => setPrompt(null), prompt.expiration);
+
     return () => { clearTimeout(timer); };
   }, [prompt]);
 
-  const sendSingle = useCallback((v: string|number|boolean) => {
+  const sendSingle = useCallback((v: string | number | boolean) => {
     socket?.emit(PROMPT_RESPONSE, v);
+
     setPrompt(null);
   }, [socket]);
 
@@ -64,10 +69,12 @@ const PromptWrapper: React.FC = () => {
 
   const confirmMulti = useCallback(() => {
     socket?.emit(PROMPT_RESPONSE, selected);
+
     setPrompt(null);
   }, [socket, selected]);
 
-  if (!prompt || !socket) return null;
+  if (!prompt || !socket || gameState?.eliminatedPlayers.some((p) => p.uuid === socket.id)) return null;
+
   const isMulti = prompt.variant === 'OWNED_CARDS_CHOICE_MULTIPLE';
 
   return (

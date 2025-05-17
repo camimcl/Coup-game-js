@@ -1,16 +1,30 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useSocketContext } from '../../contexts/SocketProvider';
+import { LOG } from '../../events';
 
-interface LogsProps {
-  /** Game event log entries */
-}
+const Logs: React.FC = () => {
+  const { socket } = useSocketContext();
 
- /**
-  * Scrollable log panel showing past game events.
-  */
-const Logs: React.FC<LogsProps> = () => {
+  const [logs, setLogs] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on(LOG, (message: string) => {
+      setLogs([message, ...logs])
+    })
+
+    return () => {
+      socket.off(LOG)
+    }
+  }, [socket, logs])
+
   return (
     <div id="logs">
-      {/* TODO: map over log entries */}
+      <h3 className='mb-2'>Logs</h3>
+      {
+        logs.map((log) => (<span className='block mb-1'>{log}</span>))
+      }
     </div>
   );
 };

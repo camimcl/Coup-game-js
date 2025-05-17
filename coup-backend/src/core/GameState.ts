@@ -9,6 +9,7 @@ import {
   CARD_DRAW,
   GAME_END, GAME_STATE_UPDATE, TURN_START, PLACE_CARD_INTO_DECK,
   PLAYER_ELIMINATED,
+  LOG,
 } from '../constants/events.ts';
 
 export default class GameState {
@@ -54,6 +55,8 @@ export default class GameState {
     this.dealInitialHands();
 
     this.broadcastState();
+
+    this.namespace.emit(LOG, 'Iniciando partida.');
   }
 
   public goToNextTurn(): void {
@@ -78,6 +81,8 @@ export default class GameState {
     this.namespace.emit(TURN_START);
 
     this.broadcastState();
+
+    this.namespace.emit(LOG, 'Iniciando turno.');
   }
 
   public drawCardForPlayer(player: Player): Card | null {
@@ -93,12 +98,17 @@ export default class GameState {
 
       this.broadcastState();
 
+      this.namespace.emit(LOG, `${player.name} recebeu uma carta.`);
+
       return card;
     }
+
     return null;
   }
 
   public placeCardIntoDeckAndReceiveAnother(cardUUID: string, player: Player): void {
+    this.namespace.emit(LOG, `${player.name} descartou a carta revelada.`);
+
     this.placeCardIntoDeck(player.removeCardByUUID(cardUUID));
 
     this.drawCardForPlayer(player);
@@ -123,11 +133,11 @@ export default class GameState {
 
     console.debug(`${player.name} has been eliminated`);
 
+    this.namespace.emit(LOG, `${player.name} foi eliminado.`);
+
     const index = this.players.findIndex((p) => p.uuid === uuid);
 
-    if (index >= this.currentTurnPlayerIndex) {
-      this.currentTurnPlayerIndex -= 1;
-    }
+    this.currentTurnPlayerIndex -= 1;
 
     this.eliminatedPlayers.push(this.players.splice(index, 1)[0]);
 
@@ -146,9 +156,10 @@ export default class GameState {
   removePlayer(uuid: string) {
     const index = this.players.findIndex((p) => p.uuid === uuid);
 
-    const removedPlayer = this.players.splice(index, 1);
+    const removedPlayer = this.players.splice(index, 1)[0];
 
-    removedPlayer[0]?.getCards().forEach((card) => this.deck.pushAndShuffle(card));
+    this.namespace.emit(LOG, `${removedPlayer.name} saiu da partida.`);
+    // removedPlayer?.getCards().forEach((card) => this.deck.pushAndShuffle(card));
 
     if (index === this.currentTurnPlayerIndex) {
       // We need to go back one index so the method
@@ -162,6 +173,8 @@ export default class GameState {
   }
 
   private dealInitialHands(handSize: number = 2): void {
+    this.namespace.emit(LOG, 'Distribuindo cartas iniciais.');
+
     const totalCardsNeeded = this.players.length * handSize;
 
     if (this.deck.size() < totalCardsNeeded) {
@@ -188,7 +201,7 @@ export default class GameState {
     this.namespace.emit(GAME_STATE_UPDATE, {
       uuid: this.uuid,
       players: this.players.map((p) => p.getPublicProfile()),
-      eliminated: this.eliminatedPlayers.map((p) => p.getPublicProfile()),
+      eliminatedPlayers: this.eliminatedPlayers.map((p) => p.getPublicProfile()),
       currentTurnPlayer: this.getCurrentTurnPlayer()?.uuid,
       deckSize: this.deck.size(),
       knownCards: this.knownCards,

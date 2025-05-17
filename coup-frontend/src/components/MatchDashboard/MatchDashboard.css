@@ -6,7 +6,7 @@
   grid-template-rows: auto 1fr auto;
   grid-template-areas:
     "players players players"
-    "deck prompt-wrapper logs"
+    "discarded-cards prompt-wrapper logs"
     "discarded-cards player-cards logs";
   gap: 1rem;
 

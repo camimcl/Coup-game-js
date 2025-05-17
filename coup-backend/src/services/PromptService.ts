@@ -1,6 +1,6 @@
 /* eslint-disable class-methods-use-this */
 import { Namespace, Socket } from 'socket.io';
-import { PROMPT, PROMPT_RESPONSE } from '../constants/events.ts';
+import { CLEAR_PROMPT, PROMPT, PROMPT_RESPONSE } from '../constants/events.ts';
 import {
   PROMPT_OPTION_CHALLENGE_ACCEPT,
   PROMPT_OPTION_CHALLENGE_PASS,
@@ -61,8 +61,10 @@ export class PromptService {
   ): Promise<string> {
     return new Promise((resolve) => {
       const timer = setTimeout(() => resolve(defaultValue), timeoutMillis);
+
       socket.once(PROMPT_RESPONSE, (response: string) => {
         clearTimeout(timer);
+
         resolve(response);
       });
     });
@@ -126,8 +128,11 @@ export class PromptService {
       { label: 'Passar', value: PROMPT_OPTION_CHALLENGE_PASS },
     ];
     const defaultVal = PROMPT_OPTION_CHALLENGE_PASS;
+
     this.emitToPlayer(target, message, options, PromptVariant.CHALLENGE, timeoutMillis);
+
     const response = await this.waitForResponse(target, defaultVal, timeoutMillis);
+
     return response as typeof PROMPT_OPTION_CHALLENGE_ACCEPT | typeof PROMPT_OPTION_CHALLENGE_PASS;
   }
 
@@ -147,7 +152,11 @@ export class PromptService {
     return new Promise((resolve) => {
       let ignored = 0;
 
-      const timer = setTimeout(() => resolve({ challengerId: '', response: PROMPT_OPTION_CHALLENGE_PASS }), timeoutMillis);
+      const timer = setTimeout(() => {
+        sender.broadcast.emit(CLEAR_PROMPT);
+
+        resolve({ challengerId: '', response: PROMPT_OPTION_CHALLENGE_PASS });
+      }, timeoutMillis);
 
       onceEverySocketExceptOne({
         namespace: this.namespace,
@@ -165,6 +174,9 @@ export class PromptService {
             }
           } else {
             clearTimeout(timer);
+
+            sender.broadcast.emit(CLEAR_PROMPT);
+
             resolve({ challengerId: id, response: resp });
           }
         },

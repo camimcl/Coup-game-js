@@ -9,31 +9,12 @@
   box-sizing: border-box;
 }
 
-/* 2. Remove default margins */
-body,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-p,
-ul,
-ol,
-figure,
-blockquote {
-  margin: 0;
-  padding: 0;
-}
-
-/* 3. Core body styles */
 body {
   color: #2e2e2e;
   background-color: #fafafa;
   -webkit-font-smoothing: antialiased;
 }
 
-/* 4. Headings */
 h1,
 h2,
 h3,
@@ -42,29 +23,6 @@ h5,
 h6 {
   color: #2e2e2e;
   font-weight: 600;
-}
-
-/* 5. Links */
-a {
-  color: #005f73;
-  text-decoration: none;
-}
-
-a:hover {
-  text-decoration: underline;
-}
-
-/* 6. Lists */
-ul,
-ol {
-  list-style: none;
-}
-
-/* 7. Images & media */
-img,
-video {
-  max-width: 100%;
-  display: block;
 }
 
 button {

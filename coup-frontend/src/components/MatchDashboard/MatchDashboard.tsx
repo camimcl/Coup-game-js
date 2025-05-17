@@ -1,7 +1,6 @@
 import React from 'react';
 
 import Players from './Players';
-import Deck from './Deck';
 import DiscardedCards from './DiscardedCards';
 import PromptWrapper from './PromptWrapper';
 import Logs from './Logs';

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useGameState, type Card } from '../../contexts/GameStateProvider';
 import { useSocketContext } from '../../contexts/SocketProvider';
 import { PRIVATE_PLAYER_INFO_UPDATE, REQUEST_PRIVATE_PLAYER_INFO } from '../../events';
@@ -16,13 +16,18 @@ const PlayerCards: React.FC = () => {
 
   const [cards, setCards] = useState<Card[]>([])
 
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.emit(REQUEST_PRIVATE_PLAYER_INFO);
+
+    socket.on(PRIVATE_PLAYER_INFO_UPDATE, (playerInfo: PrivatePlayerInfo) => {
+      setCards(playerInfo.cards)
+    })
+
+  }, [socket])
+
   if (!gameState || !socket) return null;
-
-  socket.emit(REQUEST_PRIVATE_PLAYER_INFO);
-
-  socket.on(PRIVATE_PLAYER_INFO_UPDATE, (playerInfo: PrivatePlayerInfo) => {
-    setCards(playerInfo.cards)
-  })
 
   return (
     <div
@@ -41,7 +46,7 @@ const PlayerCards: React.FC = () => {
             key={i}
             src={src}
             alt={card.variant}
-            style={{maxWidth: "120px"}}
+            style={{ maxWidth: "120px" }}
             className="object-contain flex-shrink-0"
           />
         );
