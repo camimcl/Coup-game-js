@@ -1,10 +1,11 @@
+// src/components/MatchDashboard/PromptWrapper.tsx
 import React, { useEffect, useState, useCallback } from 'react';
 import { useSocketContext } from '../../contexts/SocketProvider';
-import { CLEAR_PROMPT, PROMPT, PROMPT_RESPONSE } from '../../events';
-import { useGameState } from '../../contexts/GameStateProvider';
+import { PROMPT, PROMPT_RESPONSE } from '../../events';
+import './PromptWrapper.css';
 
 export const PROMPT_OPTION_CHALLENGE_ACCEPT = 'PROMPT_OPTION_CHALLENGE_ACCEPT';
-export const PROMPT_OPTION_CHALLENGE_PASS = 'PROMPT_OPTION_CHALLENGE_PASS';
+export const PROMPT_OPTION_CHALLENGE_PASS   = 'PROMPT_OPTION_CHALLENGE_PASS';
 
 export type PROMPT_OPTION_VALUE =
   typeof PROMPT_OPTION_CHALLENGE_ACCEPT |
@@ -29,36 +30,62 @@ interface PromptData {
 }
 
 const PromptWrapper: React.FC = () => {
-  const { gameState } = useGameState();
   const { socket } = useSocketContext();
   const [prompt, setPrompt] = useState<PromptData | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
+  const [activeOption, setActiveOption] = useState<number>(-1);
 
   useEffect(() => {
     if (!socket) return;
+    
     const onPrompt = (data: PromptData) => {
       setPrompt(data);
       setSelected([]);
+      setActiveOption(-1);
+      
+      // se quiser colocar um alertinha quando for a vez
+      // playPromptSound();
     };
+    
     socket.on(PROMPT, onPrompt);
-
-    socket.on(CLEAR_PROMPT, () => setPrompt(null))
-
     return () => { socket.off(PROMPT, onPrompt); };
   }, [socket]);
 
   useEffect(() => {
     if (!prompt || prompt.expiration == null) return;
-
+    
     const timer = setTimeout(() => setPrompt(null), prompt.expiration);
-
+    
+    const startTime = Date.now();
+    const duration = prompt.expiration;
+    
+    const updateProgress = () => {
+      const elapsed = Date.now() - startTime;
+      const remaining = Math.max(0, duration - elapsed);
+      
+      const progressElement = document.querySelector('.timer-progress') as HTMLElement;
+      if (progressElement) {
+        const percent = (remaining / duration) * 100;
+        progressElement.style.width = `${percent}%`;
+      }
+      
+      if (remaining > 0) {
+        requestAnimationFrame(updateProgress);
+      }
+    };
+    
+    requestAnimationFrame(updateProgress);
+    
     return () => { clearTimeout(timer); };
   }, [prompt]);
 
-  const sendSingle = useCallback((v: string | number | boolean) => {
-    socket?.emit(PROMPT_RESPONSE, v);
-
-    setPrompt(null);
+  const sendSingle = useCallback((v: string|number|boolean, index: number) => {
+    setActiveOption(index);
+    
+    setTimeout(() => {
+      socket?.emit(PROMPT_RESPONSE, v);
+      setPrompt(null);
+    }, 300);
   }, [socket]);
 
   const toggleSelect = useCallback((v: string) => {
@@ -69,66 +96,88 @@ const PromptWrapper: React.FC = () => {
 
   const confirmMulti = useCallback(() => {
     socket?.emit(PROMPT_RESPONSE, selected);
-
     setPrompt(null);
   }, [socket, selected]);
 
-  if (!prompt || !socket || gameState?.eliminatedPlayers.some((p) => p.uuid === socket.id)) return null;
-
+  if (!prompt || !socket) return null;
+  
   const isMulti = prompt.variant === 'OWNED_CARDS_CHOICE_MULTIPLE';
+  
+  const getPromptIcon = (message: string) => {
+    if (message.includes('desafiar') || message.includes('desafio')) return '⚔️';
+    if (message.includes('bloquear')) return '🛡️';
+    if (message.includes('assassin')) return '🗡️';
+    if (message.includes('duke') || message.includes('duque')) return '👑';
+    if (message.includes('captain') || message.includes('capitão')) return '⚓';
+    if (message.includes('ambassador') || message.includes('embaixador')) return '📜';
+    if (message.includes('condessa')) return '👸';
+    if (message.includes('fazer')) return '🎭';
+    if (message.includes('escolher') || message.includes('escolha')) return '👆';
+    return '❓';
+  };
 
   return (
-    <div
-      id="prompt-wrapper"
-      className="
-        inset-0 flex items-center justify-center
-        bg-opacity-50 p-4
-      "
-    >
-      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm">
-        <p className="mb-4 text-gray-800 font-medium">
+    <div id="prompt-wrapper" className="prompt-overlay">
+      <div className="prompt-card coup-card">
+        <div className="prompt-header">
+          <span className="prompt-icon">{getPromptIcon(prompt.message)}</span>
+          <h3 className="prompt-title">Sua Decisão</h3>
+        </div>
+        
+        <div className="card-decorations">
+          <div className="decoration corner-tl"></div>
+          <div className="decoration corner-tr"></div>
+          <div className="decoration corner-bl"></div>
+          <div className="decoration corner-br"></div>
+        </div>
+        
+        <div className="prompt-message">
           {prompt.message}
-        </p>
-        <div className="flex flex-col gap-2 mb-4">
-          {prompt.options.map((opt) =>
+        </div>
+        
+        {prompt.expiration && (
+          <div className="timer-container">
+            <div className="timer-progress"></div>
+          </div>
+        )}
+        
+        <div className="prompt-options">
+          {prompt.options.map((opt, index) =>
             isMulti ? (
               <label
                 key={opt.value.toString()}
-                className="flex items-center space-x-2"
+                className={`prompt-checkbox-option ${selected.includes(opt.value.toString()) ? 'selected' : ''}`}
               >
                 <input
                   type="checkbox"
                   checked={selected.includes(opt.value.toString())}
                   onChange={() => toggleSelect(opt.value.toString())}
+                  className="checkbox-input"
                 />
-                <span className="text-gray-700">{opt.label}</span>
+                <span className="checkbox-custom"></span>
+                <span className="option-label">{opt.label}</span>
               </label>
             ) : (
               <button
                 key={opt.value.toString()}
-                className="
-                  w-full text-left px-4 py-2
-                  bg-blue-500 text-white rounded
-                  hover:bg-blue-600
-                "
-                onClick={() => sendSingle(opt.value)}
+                className={`prompt-button ${index === activeOption ? 'active' : ''}`}
+                onClick={() => sendSingle(opt.value, index)}
               >
-                {opt.label}
+                <span className="button-text">{opt.label}</span>
+                <div className="button-shine"></div>
               </button>
             )
           )}
         </div>
+        
         {isMulti && (
           <button
-            className="
-              w-full px-4 py-2
-              bg-green-500 text-white rounded
-              hover:bg-green-600 disabled:opacity-50
-            "
+            className={`confirm-button ${selected.length === 0 ? 'disabled' : ''}`}
             onClick={confirmMulti}
             disabled={selected.length === 0}
           >
-            Confirm
+            <span className="button-text">Confirmar</span>
+            <div className="button-shine"></div>
           </button>
         )}
       </div>

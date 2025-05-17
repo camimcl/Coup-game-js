@@ -1,0 +1,407 @@
+@import url('https://fonts.googleapis.com/css2?family=Creepster&family=Bungee:wght@400;700&display=swap');
+
+:root {
+  --coup-yellow: #FDD835;
+  --coup-red: #C62828;
+  --coup-blue: #1976D2;
+  --coup-green: #388E3C;
+  --coup-purple: #7B1FA2;
+  --coup-orange: #FF8F00;
+  --coup-brown: #8D6E63;
+  --coup-black: #212121;
+  --coup-white: #FFF8E1;
+  --coup-shadow: rgba(0,0,0,0.5);
+  --coup-glow: rgba(253, 216, 53, 0.6);
+}
+
+.player-cards-container {
+  grid-area: player-cards;
+  background: linear-gradient(135deg, var(--coup-black) 0%, #424242 100%);
+  border: 6px solid var(--coup-yellow);
+  border-radius: 25px;
+  padding: 25px;
+  position: relative;
+  box-shadow: 
+    0 0 0 4px var(--coup-black),
+    0 0 0 8px var(--coup-white),
+    inset 0 4px 16px rgba(0,0,0,0.3),
+    0 10px 20px var(--coup-shadow);
+  overflow: hidden;
+}
+
+.player-cards-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,0.1),
+    transparent
+  );
+  animation: cardShine 3s infinite;
+}
+
+@keyframes cardShine {
+  0% { left: -100%; }
+  50% { left: 100%; }
+  100% { left: 100%; }
+}
+
+.cards-title {
+  font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  font-size: 1.8em;
+  color: var(--coup-yellow);
+  text-align: center;
+  margin-bottom: 20px;
+  text-shadow: 
+    3px 3px 0 var(--coup-black),
+    5px 5px 0 var(--coup-red);
+  position: relative;
+  z-index: 10;
+}
+
+.title-highlight {
+  display: inline-block;
+  animation: bounceHighlight 2s ease-in-out infinite;
+  margin: 0 10px;
+}
+
+@keyframes bounceHighlight {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.2) rotate(10deg); }
+}
+
+.cards-grid {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 5;
+}
+
+.card-wrapper {
+  --card-rotation: calc(var(--card-index) * 5deg - 10deg);
+  transform: rotate(var(--card-rotation));
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  animation: cardFloat 0.8s ease forwards;
+  animation-delay: calc(var(--card-index) * 0.15s);
+  opacity: 0;
+}
+
+@keyframes cardFloat {
+  from {
+    opacity: 0;
+    transform: translateY(50px) rotate(var(--card-rotation));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(var(--card-rotation));
+  }
+}
+
+.card-wrapper:hover {
+  transform: translateY(-20px) rotate(0deg) scale(1.1);
+  z-index: 20;
+}
+
+.card-inner {
+  position: relative;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 
+    0 0 0 4px var(--coup-yellow),
+    0 0 0 8px var(--coup-black),
+    0 8px 16px var(--coup-shadow);
+}
+
+.card-image {
+  width: 120px;
+  height: 168px;
+  display: block;
+  border-radius: 15px;
+  transition: all 0.3s ease;
+}
+
+.card-gloss {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  height: 30px;
+  background: linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.4),
+    transparent
+  );
+  border-radius: 10px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card-wrapper:hover .card-gloss {
+  opacity: 1;
+}
+
+.card-border {
+  position: absolute;
+  width: 400%;
+  height: 300%;
+  top: -175px;
+  right: -150px;
+  border: 2px solid transparent;
+  border-radius: 17px;
+  background: linear-gradient(
+    45deg,
+    var(--coup-red),
+    var(--coup-yellow),
+    var(--coup-green),
+    var(--coup-purple)
+  ) border-box;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card-wrapper:hover .card-border {
+  opacity: 0.6;
+  animation: borderSpin 2s linear infinite;
+}
+
+@keyframes borderSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.loading-container {
+  text-align: center;
+  padding: 40px 0;
+}
+
+.coup-loader {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.loader-card {
+  width: 40px;
+  height: 56px;
+  background: var(--coup-brown);
+  border: 3px solid var(--coup-black);
+  border-radius: 6px;
+  animation: loaderBounce 1.2s ease-in-out infinite;
+}
+
+.loader-card:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loader-card:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes loaderBounce {
+  0%, 80%, 100% {
+    transform: scale(0.9) rotate(0deg);
+  }
+  40% {
+    transform: scale(1.1) rotate(5deg);
+  }
+}
+
+.loading-text {
+  font-family: 'Bungee', cursive;
+  color: var(--coup-yellow);
+  font-size: 1.2em;
+  text-shadow: 2px 2px 0 var(--coup-black);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.cards-decoration {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.sparkle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: var(--coup-yellow);
+  border-radius: 50%;
+  animation: sparkleFloat 4s ease-in-out infinite;
+}
+
+.sparkle-1 {
+  top: 20%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.sparkle-2 {
+  top: 60%;
+  right: 15%;
+  animation-delay: 1.5s;
+}
+
+.sparkle-3 {
+  bottom: 20%;
+  left: 60%;
+  animation-delay: 3s;
+}
+
+.card-wrapper.discarding {
+  animation: cardDiscardAnimation 1.5s ease-out forwards;
+  z-index: 50;
+}
+
+@keyframes cardDiscardAnimation {
+  0% {
+    transform: translateY(0) rotate(var(--card-rotation));
+    opacity: 1;
+  }
+  20% {
+    transform: translateY(-30px) rotate(0deg) scale(1.1);
+    opacity: 1;
+  }
+  40% {
+    transform: translateY(-20px) rotate(360deg) scale(0.9);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(100px) rotate(720deg) scale(0.1);
+    opacity: 0;
+  }
+}
+
+.discard-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(198, 40, 40, 0.3);
+  border-radius: 12px;
+  mix-blend-mode: overlay;
+  z-index: 10;
+  animation: overlayPulse 0.8s ease-in-out;
+}
+
+@keyframes overlayPulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.7; }
+}
+
+.discard-effect {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  z-index: 100;
+}
+
+.discard-splash {
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  background: var(--coup-red);
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(0.1);
+  animation: splashEffect 1.2s ease-out forwards;
+}
+
+@keyframes splashEffect {
+  0% {
+    transform: scale(0.1);
+    opacity: 0;
+  }
+  20% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+.discard-text {
+  font-family: 'Creepster', cursive;
+  font-size: 2em;
+  color: var(--coup-white);
+  text-shadow: 
+    3px 3px 0 var(--coup-black),
+    5px 5px 0 var(--coup-shadow);
+  animation: textAppear 1s ease-out forwards;
+  opacity: 0;
+  transform: scale(0.5) rotate(-5deg);
+}
+
+@keyframes textAppear {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) rotate(-5deg);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1.3) rotate(5deg);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.1) rotate(-2deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.8) rotate(0deg) translateY(-30px);
+  }
+}
+
+@keyframes sparkleFloat {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0) translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1) translateY(-20px);
+  }
+}
+
+@media (max-width: 768px) {
+  .player-cards-container {
+    padding: 15px;
+  }
+  
+  .cards-grid {
+    gap: 10px;
+  }
+  
+  .card-image {
+    width: 90px;
+    height: 126px;
+  }
+  
+  .cards-title {
+    font-size: 1.4em;
+  }
+}

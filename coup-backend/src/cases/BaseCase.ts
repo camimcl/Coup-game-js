@@ -1,8 +1,9 @@
+import { TURN_START } from '../constants/events.ts';
 import Player from '../core/entities/Player.ts';
 import GameState from '../core/GameState.ts';
-import { PromptService } from '../services/PromptService.ts';
+import { PromptService } from './PromptService.ts';
 
-export default abstract class Case {
+export default abstract class BaseCase {
   protected gameState: GameState;
 
   private caseName: string;
@@ -30,7 +31,14 @@ export default abstract class Case {
     throw new Error(`${this.caseName} is not implemented`);
   }
 
+  /**
+   * Signals that the turn is complete and advances to the next player.
+   */
   protected finishTurn(): void {
     this.gameState.goToNextTurn();
+
+    const namespace = this.gameState.getNamespace();
+
+    namespace.emit(TURN_START);
   }
 }

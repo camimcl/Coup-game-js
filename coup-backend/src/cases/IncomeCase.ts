@@ -1,8 +1,9 @@
 /* eslint-disable no-console */
 import GameState from '../core/GameState.ts';
-import Case from './Case.ts';
+import BaseCase from './BaseCase.ts';
 
-export default class IncomeCase extends Case {
+/// player takes 1 coin (unchallengeable)
+export default class IncomeCase extends BaseCase {
   constructor(gameState: GameState) {
     super('Income', gameState);
   }

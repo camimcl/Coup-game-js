@@ -18,8 +18,8 @@ export interface Card {
 
 // Define the overall game state shape
 export interface GameState {
+  currentPlayer: string;
   players: PlayerInfo[];
-  eliminatedPlayers: PlayerInfo[];
   deckSize: number
   knownCards: Card[]
   // add other game state fields here as needed

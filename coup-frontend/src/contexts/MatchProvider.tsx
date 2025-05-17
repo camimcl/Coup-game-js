@@ -25,6 +25,9 @@ export function MatchProvider({ children }: { children: ReactNode }) {
     if (!socket) return;
 
     const handler = (state: Match) => {
+      console.log("Match updated: ")
+      console.log(state)
+
       setMatch(state);
     };
 

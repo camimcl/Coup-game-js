@@ -1,10 +1,10 @@
 /* eslint-disable no-console */
-import Case from './Case.ts';
+import BaseCase from './BaseCase.ts';
 import Player from '../core/entities/Player.ts';
 import GameState from '../core/GameState.ts';
 import { COUP_PERFORMED } from '../constants/events.ts';
 
-export default class CoupCase extends Case {
+export default class CoupCase extends BaseCase {
   private targetPlayer!: Player;
 
   constructor(gameState: GameState) {
