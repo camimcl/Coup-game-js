@@ -1,6 +1,6 @@
 import Player from '../core/entities/Player.ts';
 import GameState from '../core/GameState.ts';
-import { PromptService } from './PromptService.ts';
+import { PromptService } from '../services/PromptService.ts';
 
 export default abstract class BaseCase {
   protected gameState: GameState;

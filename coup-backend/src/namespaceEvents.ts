@@ -12,7 +12,7 @@ import {
   GAME_START, MESSAGE, TURN_START, PROMPT_RESPONSE,
 } from './constants/events.ts';
 import BaseCase from './cases/BaseCase.ts';
-import { PromptOption, PromptService } from './cases/PromptService.ts';
+import { PromptOption, PromptService } from './services/PromptService.ts';
 
 export default function initializeNamespace(
   match: Match,
