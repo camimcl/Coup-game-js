@@ -53,8 +53,6 @@ export default class ForeignAidCase extends BaseCase {
   }
 
   private async resolveChallengeToDuke() {
-    const namespace = this.gameState.getNamespace();
-
     console.debug(`${this.currentPlayer.name} contestou o Duque de ${this.challengerPlayer.name}`);
 
     // Duque revela carta

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import path from 'path';
@@ -74,7 +75,3 @@ app.post('/api/start-match/:id', (request: Request, response: Response) => {
 });
 
 export default httpServer;
-
-// TODO: /join-match
-
-// TODO: /register-player

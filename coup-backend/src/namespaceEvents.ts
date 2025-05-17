@@ -42,7 +42,6 @@ export default function initializeNamespace(
   namespace.on('connection', (socket) => {
     const username = (socket.handshake.auth.username || socket.id) as string;
 
-    // Check if the match is already in progress
     if (match.isInProgress()) {
       console.warn(`Player ${username} tried to join an ongoing match.`);
 

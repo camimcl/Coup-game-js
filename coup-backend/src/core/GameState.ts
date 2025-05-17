@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Namespace } from 'socket.io';
 import EventEmitter from 'events';
 import Card from './entities/Card.ts';
@@ -6,7 +7,7 @@ import Deck from './entities/Deck.ts';
 import {
   CARD_DISCARDED,
   CARD_DRAW,
-  GAME_END, GAME_STATE_UPDATE, TURN_START, PLACE_CARD_INTO_DECK, PLAYER_DEATH,
+  GAME_END, GAME_STATE_UPDATE, TURN_START, PLACE_CARD_INTO_DECK,
   PLAYER_ELIMINATED,
 } from '../constants/events.ts';
 
@@ -132,21 +133,22 @@ export default class GameState {
     return null;
   }
 
-  // put the revealed card in the deck, shuffle, and draw a new one
   public placeCardIntoDeckAndReceiveAnother(cardUUID: string, player: Player): void {
-    const discarded = player.removeCardByUUID(cardUUID);
-
-    this.deck.pushAndShuffle(discarded);
-
-    // Warns everyone that a card was placed into the deck
-    this.namespace.emit(
-      PLACE_CARD_INTO_DECK,
-      { cardUUID: discarded.uuid, originPlayerUUID: player.uuid },
-    );
+    this.placeCardIntoDeck(player.removeCardByUUID(cardUUID));
 
     this.drawCardForPlayer(player);
 
     this.broadcastState();
+  }
+
+  public placeCardIntoDeck(card: Card): void {
+    this.deck.pushAndShuffle(card);
+
+    // Warns everyone that a card was placed into the deck
+    this.namespace.emit(
+      PLACE_CARD_INTO_DECK,
+      { cardUUID: card.uuid, originPlayerUUID: card.uuid },
+    );
   }
 
   /**
@@ -157,9 +159,11 @@ export default class GameState {
    */
   public eliminatePlayer(uuid: string): void {
     const [player] = this.players.filter((p) => p.uuid === uuid);
+
     if (!player) return;
 
-    console.log(`${player.name} has been eliminated`);
+    console.debug(`${player.name} has been eliminated`);
+
     const index = this.players.findIndex((p) => p.uuid === uuid);
 
     if (index >= this.currentTurnPlayerIndex) {
@@ -171,14 +175,15 @@ export default class GameState {
     // Warns everyone that this player has been eliminated
     // TODO: send who killed that player?
 
-    // this.namespace.emit(
-    //  PLAYER_ELIMINATED,
-    //  { playerUUID: uuid },
-    // );
+    this.namespace.emit(
+      PLAYER_ELIMINATED,
+      { playerUUID: uuid },
+    );
 
     this.broadcastState();
   }
 
+  // TODO: I guess we should not return the cards to the deck
   removePlayer(uuid: string) {
     const index = this.players.findIndex((p) => p.uuid === uuid);
 
@@ -189,7 +194,6 @@ export default class GameState {
     // If the current player is leaving the match,
     // start a new turn
     if (index === this.currentTurnPlayerIndex) {
-      console.log('It\'s the current player turn that is leaving the room');
       // We need to go back one index so the method
       // this.goToNextTurn() sets the right value to it
       this.currentTurnPlayerIndex -= 1;
@@ -231,24 +235,13 @@ export default class GameState {
     return [...this.players];
   }
 
-  /** @returns All eliminated players. */
-  public getEliminatedPlayers(): Player[] {
-    return [...this.eliminatedPlayers];
-  }
-
   /** @returns Total number of active players. */
   public getPlayersCount(): number {
     return this.players.length;
   }
 
-  /** @returns The current deck. */
-  public getDeck(): Deck {
-    return this.deck;
-  }
-
   /**
    * Broadcasts the full game state over the namespace.
-   * You can adjust which parts you want clients to see.
    */
   public broadcastState(): void {
     this.namespace.emit(GAME_STATE_UPDATE, {

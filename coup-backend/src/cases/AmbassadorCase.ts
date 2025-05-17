@@ -57,26 +57,21 @@ export default class AmbassadorCase extends BaseCase {
   }
 
   private async performExchange() {
-    // draw two cards from the deck
-    const drawn1 = this.gameState.getDeck().draw();
-    const drawn2 = this.gameState.getDeck().draw();
-
-    // add the cards to the player
-    this.currentPlayer.addCard(drawn1);
-    this.currentPlayer.addCard(drawn2);
+    this.gameState.drawCardForPlayer(this.currentPlayer);
+    this.gameState.drawCardForPlayer(this.currentPlayer);
 
     // colect all the actual cards after the draw
-    const totalCards = this.currentPlayer.getCardsClone();
+    const cards = this.currentPlayer.getCardsClone();
 
     // keep the choosen cards
     const keptCardsUUIDs = await this.promptService.askTwoCards(this.currentPlayer);
 
     // remove the cards that were not kept
-    totalCards.forEach((card) => {
+    cards.forEach((card) => {
       if (!keptCardsUUIDs.includes(card.uuid)) {
         this.currentPlayer.removeCardByUUID(card.uuid);
 
-        this.gameState.getDeck().pushAndShuffle(card);
+        this.gameState.placeCardIntoDeck(card);
       }
     });
   }
